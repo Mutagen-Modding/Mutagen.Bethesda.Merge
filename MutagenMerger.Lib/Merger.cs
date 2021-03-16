@@ -34,17 +34,8 @@ namespace MutagenMerger.Lib
         {
             var linkCache = _loadOrder.ToImmutableLinkCache();
             
-            foreach (var listing in _loadOrder.PriorityOrder)
-            {
-                if (listing.Mod == null) continue;
-                if (!listing.Enabled) continue;
-                
-                foreach (var rec in listing.Mod
-                    .EnumerateMajorRecordContexts<ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(linkCache))
-                {
-                    rec.DuplicateIntoAsNewRecord(_outputMod, rec.Record.EditorID);
-                }
-            }
+            _loadOrder.MergeMods<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(linkCache,
+                _loadOrder.Select(x => x.Key).ToList(), _outputMod);
         }
 
         public void Dispose()
