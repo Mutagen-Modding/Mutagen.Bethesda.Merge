@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using JetBrains.Annotations;
@@ -15,6 +14,8 @@ namespace MutagenMerger.Lib
         private readonly LoadOrder<IModListing<ISkyrimModGetter>> _loadOrder;
         private readonly SkyrimMod _outputMod;
         private readonly string _outputPath;
+        
+        public HashSet<FormKey>? BrokenKeys { get; set; }
         
         public Merger(string dataFolderPath, List<string> plugins, string outputName)
         {
@@ -33,9 +34,10 @@ namespace MutagenMerger.Lib
         public void Merge()
         {
             var linkCache = _loadOrder.ToImmutableLinkCache();
-            
+
             _loadOrder.MergeMods<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(linkCache,
-                _loadOrder.Select(x => x.Key).ToList(), _outputMod);
+                _loadOrder.Select(x => x.Key).ToList(), _outputMod, out var brokenKeys);
+            BrokenKeys = brokenKeys;
         }
 
         public void Dispose()

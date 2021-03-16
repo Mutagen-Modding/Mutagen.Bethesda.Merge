@@ -58,6 +58,8 @@ namespace MutagenMerger.Tests
             using (var merger = new Merger(testFolder, mods, outputFileName))
             {
                 merger.Merge();
+                if (merger.BrokenKeys != null)
+                    Assert.Empty(merger.BrokenKeys);
             }
 
             var outputFile = Path.Combine(testFolder, outputFileName);
@@ -70,6 +72,38 @@ namespace MutagenMerger.Tests
                 Assert.Contains(mod.Actions, x => x.EditorID == "Action3");
                 Assert.Contains(mod.Actions, x => x.EditorID == "Action4");
             });
+        }
+
+        [Fact]
+        public void TestBasePluginsMerging()
+        {
+            //requires manual activation
+            const string folder = "base-plugins";
+            if (!Directory.Exists(folder)) return;
+
+            var mods = new List<string>
+            {
+                "Skyrim.esm",
+                "Update.esm",
+                "Dawnguard.esm",
+                "HearthFires.esm",
+                "Dragonborn.esm"
+            };
+
+            if (!mods.All(x => File.Exists(Path.Combine(folder, x))))
+                return;
+
+            const string outputMod = "output.esp";
+            var outputPath = Path.Combine(folder, outputMod);
+            if (File.Exists(outputPath))
+                File.Delete(outputPath);
+            
+            using (var merger = new Merger(folder, mods, outputMod))
+            {
+                merger.Merge();
+            }
+            
+            Assert.True(File.Exists(outputPath));
         }
     }
 }
