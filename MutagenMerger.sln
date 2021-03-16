@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MutagenMerger.CLI", "MutagenMerger.CLI\MutagenMerger.CLI.csproj", "{7AA24461-4268-4136-8AA7-57AD53CA5047}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MutagenMerger.Lib", "MutagenMerger.Lib\MutagenMerger.Lib.csproj", "{44BA9DBC-62D1-45FD-9D5F-5C5BA5B1026D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A86B978E-588D-414D-8E68-6FC71A0673D7}"
+ProjectSection(SolutionItems) = preProject
+	.editorconfig = .editorconfig
+	.gitattributes = .gitattributes
+	.gitignore = .gitignore
+EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MutagenMerger.Tests", "MutagenMerger.Tests\MutagenMerger.Tests.csproj", "{B5E60238-BEAF-4E63-8EDE-BE5A3443B64A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7AA24461-4268-4136-8AA7-57AD53CA5047}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AA24461-4268-4136-8AA7-57AD53CA5047}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AA24461-4268-4136-8AA7-57AD53CA5047}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AA24461-4268-4136-8AA7-57AD53CA5047}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44BA9DBC-62D1-45FD-9D5F-5C5BA5B1026D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44BA9DBC-62D1-45FD-9D5F-5C5BA5B1026D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44BA9DBC-62D1-45FD-9D5F-5C5BA5B1026D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44BA9DBC-62D1-45FD-9D5F-5C5BA5B1026D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5E60238-BEAF-4E63-8EDE-BE5A3443B64A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5E60238-BEAF-4E63-8EDE-BE5A3443B64A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5E60238-BEAF-4E63-8EDE-BE5A3443B64A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5E60238-BEAF-4E63-8EDE-BE5A3443B64A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
