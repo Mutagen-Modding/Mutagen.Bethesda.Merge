@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mutagen.Bethesda;
 
 namespace MutagenMerger.Lib
@@ -7,8 +8,10 @@ namespace MutagenMerger.Lib
     public static class MergeExtensions
     {
         public static void MergeMods<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
-            this LoadOrder<IModListing<TModGetter>> loadOrder,
-            ILinkCache<TMod, TModGetter> linkCache, List<ModKey> modsToMerge, TMod outputMod, out HashSet<FormKey> brokenKeys)
+            this IEnumerable<TModGetter> modsToMerge,
+            ILinkCache<TMod, TModGetter> linkCache, 
+            TMod outputMod,
+            out HashSet<FormKey> brokenKeys)
             where TMod : class, TModGetter, IMod
             where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable
             where TMajorRecord : class, TMajorRecordGetter, IMajorRecord
@@ -16,15 +19,17 @@ namespace MutagenMerger.Lib
         {
             var processedKeys = new HashSet<FormKey>();
             brokenKeys = new HashSet<FormKey>();
+
+            // Just in case user gave us a lazy IEnumerable
+            var modsCached = modsToMerge.ToArray();
+
+            var modsToMergeKeys = modsCached.Select(x => x.ModKey).ToHashSet();
             
-            foreach (var listing in loadOrder.PriorityOrder)
+            foreach (var listing in modsCached)
             {
-                if (listing.Mod == null) continue;
-                if (!listing.Enabled) continue;
+                if (!modsToMergeKeys.Contains(listing.ModKey)) continue;
 
-                if (!modsToMerge.Contains(listing.ModKey)) continue;
-
-                foreach (var rec in listing.Mod.EnumerateMajorRecordContexts<TMajorRecord, TMajorRecordGetter>(
+                foreach (var rec in listing.EnumerateMajorRecordContexts<TMajorRecord, TMajorRecordGetter>(
                     linkCache))
                 {
                     /*
