@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,18 +17,18 @@ namespace MutagenMerger.Lib
         
         public HashSet<FormKey>? BrokenKeys { get; set; }
         
-        public Merger(string dataFolderPath, List<string> plugins, string outputName)
+        public Merger(string dataFolderPath, List<ModKey> plugins, ModKey outputKey)
         {
             //TODO: see https://discord.com/channels/759302581448474626/759344198792380416/821399241200238662
             //WarmupSkyrim.Init();
 
             _loadOrder = LoadOrder.Import(
                 dataFolderPath,
-                plugins.Select(x => ModKey.FromNameAndExtension(x)), 
+                plugins, 
                 path => ModInstantiator<ISkyrimModGetter>.Importer(path, GameRelease.SkyrimSE));
 
-            _outputMod = new SkyrimMod(ModKey.FromNameAndExtension(outputName), SkyrimRelease.SkyrimSE);
-            _outputPath = Path.Combine(dataFolderPath, outputName);
+            _outputMod = new SkyrimMod(outputKey, SkyrimRelease.SkyrimSE);
+            _outputPath = Path.Combine(dataFolderPath, outputKey.FileName);
         }
         
         public void Merge()
