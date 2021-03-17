@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mutagen.Bethesda;
@@ -25,40 +25,35 @@ namespace MutagenMerger.Lib
 
             var modsToMergeKeys = modsCached.Select(x => x.ModKey).ToHashSet();
             
-            foreach (var listing in modsCached)
+            foreach (var rec in modsCached.WinningOverrideContexts<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(linkCache))
             {
-                if (!modsToMergeKeys.Contains(listing.ModKey)) continue;
+                /*
+                 * this is true when we add an override to the output mod and then encounter another override or
+                 * the original record
+                 */
+                if (processedKeys.Contains(rec.Record.FormKey)) continue;
 
-                foreach (var rec in listing.EnumerateMajorRecordContexts<TMajorRecord, TMajorRecordGetter>(
-                    linkCache))
+                if (rec.ModKey == rec.Record.FormKey.ModKey
+                    || modsToMergeKeys.Contains(rec.Record.FormKey.ModKey))
                 {
-                    /*
-                     * this is true when we add an override to the output mod and then encounter another override or
-                     * the original record
-                     */
-                    if (processedKeys.Contains(rec.Record.FormKey)) continue;
-                    
-                    if (rec.ModKey == rec.Record.FormKey.ModKey)
+                    //record comes from a mod we want to merge
+                    try
                     {
-                        //record comes from the current mod, we can duplicate it
-                        try
-                        {
-                            rec.DuplicateIntoAsNewRecord(outputMod, rec.Record.EditorID);
-                        }
-                        catch (Exception)
-                        {
-                            brokenKeys.Add(rec.Record.FormKey);
-                            //Debugger.Break();
-                        }
+                        rec.DuplicateIntoAsNewRecord(outputMod, rec.Record.EditorID);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        //record does not come from the current mod and overrides a record from another mod
-                        rec.GetOrAddAsOverride(outputMod);
+                        brokenKeys.Add(rec.Record.FormKey);
+                        //Debugger.Break();
                     }
-
-                    processedKeys.Add(rec.Record.FormKey);
                 }
+                else
+                {
+                    //record does not come from the current mod and overrides a record from another mod
+                    rec.GetOrAddAsOverride(outputMod);
+                }
+
+                processedKeys.Add(rec.Record.FormKey);
             }
         }
     }
