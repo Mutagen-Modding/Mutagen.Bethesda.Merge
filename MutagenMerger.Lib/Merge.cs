@@ -24,7 +24,7 @@ namespace MutagenMerger.Lib
 
             var modsToMergeKeys = modsCached.Select(x => x.ModKey).ToHashSet();
 
-            var linkCache = modsToMerge.ToImmutableLinkCache();
+            var linkCache = modsCached.ToImmutableLinkCache();
             
             foreach (var rec in modsCached.WinningOverrideContexts<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(linkCache))
             {
@@ -42,7 +42,7 @@ namespace MutagenMerger.Lib
                     {
                         rec.DuplicateIntoAsNewRecord(outputMod, rec.Record.EditorID);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         brokenKeys.Add(rec.Record.FormKey);
                         //Debugger.Break();
