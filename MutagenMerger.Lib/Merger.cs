@@ -14,6 +14,7 @@ namespace MutagenMerger.Lib
         private readonly LoadOrder<IModListing<ISkyrimModGetter>> _loadOrder;
         private readonly SkyrimMod _outputMod;
         private readonly string _outputPath;
+        private readonly IEnumerable<ModKey> _plugins;
         
         public HashSet<FormKey>? BrokenKeys { get; set; }
         
@@ -26,6 +27,7 @@ namespace MutagenMerger.Lib
 
             _outputMod = new SkyrimMod(outputKey, SkyrimRelease.SkyrimSE);
             _outputPath = Path.Combine(dataFolderPath, outputKey.FileName);
+            _plugins = plugins;
         }
         
         public void Merge()
@@ -40,10 +42,7 @@ namespace MutagenMerger.Lib
         public void Dispose()
         {
             _loadOrder.Dispose();
-            _outputMod.WriteToBinary(_outputPath, new BinaryWriteParameters
-            {
-                MasterFlag = BinaryWriteParameters.MasterFlagOption.ExceptionOnMismatch
-            });
+            _outputMod.WriteToBinary(_outputPath, Utils.SafeBinaryWriteParameters);
         }
     }
 }

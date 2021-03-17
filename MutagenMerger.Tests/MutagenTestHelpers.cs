@@ -2,6 +2,7 @@
 using System.IO;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Skyrim;
+using MutagenMerger.Lib;
 using Xunit;
 
 namespace MutagenMerger.Tests
@@ -15,11 +16,7 @@ namespace MutagenMerger.Tests
             
             var mod = new SkyrimMod(ModKey.FromNameAndExtension(fileName), SkyrimRelease.SkyrimSE);
             addRecords(mod);
-            mod.WriteToBinary(outputPath, new BinaryWriteParameters
-            {
-                MasterFlag = BinaryWriteParameters.MasterFlagOption.ExceptionOnMismatch,
-                RecordCount = BinaryWriteParameters.RecordCountOption.Iterate
-            });
+            mod.WriteToBinary(outputPath, Utils.SafeBinaryWriteParameters);
             return fileName;
         }
 
