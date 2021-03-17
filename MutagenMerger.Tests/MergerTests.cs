@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Mutagen.Bethesda;
 using Mutagen.Bethesda.Skyrim;
 using MutagenMerger.Lib;
 using Xunit;
@@ -33,7 +34,7 @@ namespace MutagenMerger.Tests
                 mod.Actions.AddNew("Action4");
             });
 
-            var mods = new List<string>
+            var mods = new List<ModKey>
             {
                 mod1,
                 mod2,
@@ -81,7 +82,7 @@ namespace MutagenMerger.Tests
             const string folder = "base-plugins";
             if (!Directory.Exists(folder)) return;
 
-            var mods = new List<string>
+            var mods = new List<ModKey>
             {
                 "Skyrim.esm",
                 "Update.esm",
@@ -90,7 +91,7 @@ namespace MutagenMerger.Tests
                 "Dragonborn.esm"
             };
 
-            if (!mods.All(x => File.Exists(Path.Combine(folder, x))))
+            if (!mods.All(x => File.Exists(Path.Combine(folder, x.FileName))))
                 return;
 
             const string outputMod = "output.esp";
