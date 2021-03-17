@@ -19,9 +19,6 @@ namespace MutagenMerger.Lib
         
         public Merger(string dataFolderPath, List<ModKey> plugins, ModKey outputKey)
         {
-            //TODO: see https://discord.com/channels/759302581448474626/759344198792380416/821399241200238662
-            //WarmupSkyrim.Init();
-
             _loadOrder = LoadOrder.Import(
                 dataFolderPath,
                 plugins, 
