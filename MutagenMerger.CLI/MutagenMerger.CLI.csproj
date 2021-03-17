@@ -11,4 +11,8 @@
       <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" PrivateAssets="all" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\MutagenMerger.Lib\MutagenMerger.Lib.csproj" />
+    </ItemGroup>
+
 </Project>

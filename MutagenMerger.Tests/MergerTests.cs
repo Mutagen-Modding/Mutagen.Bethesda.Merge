@@ -56,11 +56,9 @@ namespace MutagenMerger.Tests
             }
 
             const string outputFileName = "output.esp";
-            using (var merger = new Merger(testFolder, mods, outputFileName))
+            using (var merger = new Merger(testFolder, mods, mods, outputFileName))
             {
                 merger.Merge();
-                if (merger.BrokenKeys != null)
-                    Assert.Empty(merger.BrokenKeys);
             }
 
             var outputFile = Path.Combine(testFolder, outputFileName);
@@ -99,7 +97,7 @@ namespace MutagenMerger.Tests
             if (File.Exists(outputPath))
                 File.Delete(outputPath);
             
-            using (var merger = new Merger(folder, mods, outputMod))
+            using (var merger = new Merger(folder, mods, mods, outputMod))
             {
                 merger.Merge();
             }

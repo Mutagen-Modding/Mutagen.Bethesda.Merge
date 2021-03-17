@@ -8,54 +8,65 @@ namespace MutagenMerger.Lib
     public static class MergeExtensions
     {
         public static void MergeMods<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
-            this IEnumerable<TModGetter> modsToMerge,
+            this IEnumerable<TModGetter> mods,
+            IEnumerable<ModKey> modsToMerge,
             TMod outputMod,
-            out HashSet<FormKey> brokenKeys)
+            out Dictionary<FormKey, FormKey> mapping)
             where TMod : class, TModGetter, IMod
             where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable
             where TMajorRecord : class, TMajorRecordGetter, IMajorRecord
             where TMajorRecordGetter : class, IMajorRecordGetter
         {
-            var processedKeys = new HashSet<FormKey>();
-            brokenKeys = new HashSet<FormKey>();
+            //var processedKeys = new HashSet<FormKey>();
 
             // Just in case user gave us a lazy IEnumerable
-            var modsCached = modsToMerge.ToArray();
+            var modsCached = mods.ToArray();
 
-            var modsToMergeKeys = modsCached.Select(x => x.ModKey).ToHashSet();
+            var modsToMergeKeys = modsToMerge.ToHashSet();
 
             var linkCache = modsCached.ToImmutableLinkCache();
-            
-            foreach (var rec in modsCached.WinningOverrideContexts<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(linkCache))
-            {
-                /*
-                 * this is true when we add an override to the output mod and then encounter another override or
-                 * the original record
-                 */
-                if (processedKeys.Contains(rec.Record.FormKey)) continue;
 
-                if (rec.ModKey == rec.Record.FormKey.ModKey
-                    || modsToMergeKeys.Contains(rec.Record.FormKey.ModKey))
+            mapping = new Dictionary<FormKey, FormKey>();
+
+            foreach (var rec in modsCached
+                .WinningOverrideContexts<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(linkCache))
+            {
+                //don't deal with records from plugins we don't want to merge
+                if (!modsToMergeKeys.Contains(rec.ModKey)) continue;
+                
+                if (rec.ModKey == rec.Record.FormKey.ModKey)
                 {
-                    //record comes from a mod we want to merge
-                    try
-                    {
-                        rec.DuplicateIntoAsNewRecord(outputMod, rec.Record.EditorID);
-                    }
-                    catch (Exception)
-                    {
-                        brokenKeys.Add(rec.Record.FormKey);
-                        //Debugger.Break();
-                    }
+                    //record is not an override so we can just duplicate it
+                    var duplicated = rec.DuplicateIntoAsNewRecord(outputMod, rec.Record.EditorID);
+                    mapping.Add(rec.Record.FormKey, duplicated.FormKey);
                 }
                 else
                 {
-                    //record does not come from the current mod and overrides a record from another mod
-                    rec.GetOrAddAsOverride(outputMod);
+                    /*
+                     * Record is an override so we have to make sure that we add the override to the output mod
+                     * if the original plugin is not to be merged or duplicate the record if we also want to merge
+                     * the original plugin.
+                     * We duplicate the overwritten record and not the original one because we are looping over all
+                     * WinningOverrideContexts meaning we never get the original one if it's overwritten somewhere
+                     * and we also don't want "outdated" records (only overrides in that case).
+                     * This explanation probably still won't make sense but whatever.
+                     */
+                    if (modsToMergeKeys.Contains(rec.Record.FormKey.ModKey))
+                    {
+                        if (mapping.ContainsKey(rec.Record.FormKey))
+                            throw new NotImplementedException();
+                        
+                        var duplicate = rec.DuplicateIntoAsNewRecord(outputMod, rec.Record.EditorID);
+                        mapping.Add(rec.Record.FormKey, duplicate.FormKey);
+                    }
+                    else
+                    {
+                        rec.GetOrAddAsOverride(outputMod);
+                    }
                 }
-
-                processedKeys.Add(rec.Record.FormKey);
             }
+            
+            outputMod.RemapLinks(mapping);
         }
     }
 }

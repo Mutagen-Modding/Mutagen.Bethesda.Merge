@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using JetBrains.Annotations;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Skyrim;
@@ -15,10 +14,9 @@ namespace MutagenMerger.Lib
         private readonly SkyrimMod _outputMod;
         private readonly string _outputPath;
         private readonly IEnumerable<ModKey> _plugins;
-        
-        public HashSet<FormKey>? BrokenKeys { get; set; }
-        
-        public Merger(string dataFolderPath, List<ModKey> plugins, ModKey outputKey)
+        private readonly List<ModKey> _modsToMerge;
+
+        public Merger(string dataFolderPath, List<ModKey> plugins, List<ModKey> modsToMerge, ModKey outputKey)
         {
             _loadOrder = LoadOrder.Import(
                 dataFolderPath,
@@ -28,15 +26,19 @@ namespace MutagenMerger.Lib
             _outputMod = new SkyrimMod(outputKey, SkyrimRelease.SkyrimSE);
             _outputPath = Path.Combine(dataFolderPath, outputKey.FileName);
             _plugins = plugins;
+            _modsToMerge = modsToMerge;
         }
         
         public void Merge()
         {
             _loadOrder
                 .PriorityOrder
+                //.ListedOrder
                 .Resolve()
-                .MergeMods<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(_outputMod, out var brokenKeys);
-            BrokenKeys = brokenKeys;
+                .MergeMods<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(
+                    _modsToMerge,
+                    _outputMod,
+                    out var mapping);
         }
 
         public void Dispose()
