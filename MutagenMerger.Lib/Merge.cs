@@ -9,7 +9,6 @@ namespace MutagenMerger.Lib
     {
         public static void MergeMods<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
             this IEnumerable<TModGetter> modsToMerge,
-            ILinkCache<TMod, TModGetter> linkCache, 
             TMod outputMod,
             out HashSet<FormKey> brokenKeys)
             where TMod : class, TModGetter, IMod
@@ -24,6 +23,8 @@ namespace MutagenMerger.Lib
             var modsCached = modsToMerge.ToArray();
 
             var modsToMergeKeys = modsCached.Select(x => x.ModKey).ToHashSet();
+
+            var linkCache = modsToMerge.ToImmutableLinkCache();
             
             foreach (var rec in modsCached.WinningOverrideContexts<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(linkCache))
             {

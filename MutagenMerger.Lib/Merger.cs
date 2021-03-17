@@ -30,12 +30,10 @@ namespace MutagenMerger.Lib
         
         public void Merge()
         {
-            var linkCache = _loadOrder.ToImmutableLinkCache();
-
             _loadOrder
                 .PriorityOrder
                 .Resolve()
-                .MergeMods<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(linkCache, _outputMod, out var brokenKeys);
+                .MergeMods<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(_outputMod, out var brokenKeys);
             BrokenKeys = brokenKeys;
         }
 
