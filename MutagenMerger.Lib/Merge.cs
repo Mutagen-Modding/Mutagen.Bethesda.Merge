@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Mutagen.Bethesda;
 
@@ -65,6 +64,14 @@ namespace MutagenMerger.Lib
                         rec.GetOrAddAsOverride(outputMod);
                     }
                 }
+            }
+            
+            foreach (var brokenFormKey in outputMod.ContainedFormLinks
+                .Where(x => x.FormKey.IsNull && x.FormKey.ModKey != outputMod.ModKey && !x.FormKey.ModKey.IsNull)
+                .Select(x => x.FormKey)
+                .Distinct())
+            {
+                mapping.Add(brokenFormKey, FormKey.Null);
             }
             
             outputMod.RemapLinks(mapping);
