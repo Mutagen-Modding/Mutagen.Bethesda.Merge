@@ -335,16 +335,13 @@ namespace MutagenMerger.Pex.DataTypes
                         Arguments.Add(anotherArgument);
                     }
                 }
-                
-                if (current == 'L' || current == 'Q' || current == 'u')
+
+                if (current == 'u')
                 {
-                    /*
-                     * L: label?
-                     * Q: string?
-                     * u: unsigned integer?
-                     */
+                    //u: unsigned integer?
                     Debugger.Break();
-                    throw new NotImplementedException();
+                    throw new NotImplementedException(
+                        $"Argument Type 'u' reached. Please report this on GitHub and attach the pex file.");
                 }
             }
         }

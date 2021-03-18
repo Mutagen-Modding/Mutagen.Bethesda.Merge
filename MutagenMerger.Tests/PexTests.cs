@@ -7,7 +7,11 @@ namespace MutagenMerger.Tests
     public class PexTests
     {
         [Theory]
+        [InlineData("Actor.pex")]
         [InlineData("Art.pex")]
+        [InlineData("FormType.pex")]
+        [InlineData("Game.pex")]
+        [InlineData("ObjectReference.pex")]
         [InlineData("Outfit.pex")]
         [InlineData("SoulGem.pex")]
         public void TestPexParsing(string file)
