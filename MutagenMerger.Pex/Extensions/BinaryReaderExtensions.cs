@@ -1,4 +1,5 @@
-﻿using System.Buffers.Binary;
+﻿using System;
+using System.Buffers.Binary;
 using System.IO;
 
 namespace MutagenMerger.Pex.Extensions
@@ -7,10 +8,15 @@ namespace MutagenMerger.Pex.Extensions
     {
         internal static string ReadWString(this BinaryReader br, bool bigEndian = true)
         {
+            return br.ReadWStringAsSpan(bigEndian).ToString();
+        }
+
+        internal static ReadOnlySpan<char> ReadWStringAsSpan(this BinaryReader br, bool bigEndian = true)
+        {
             var length = bigEndian ? br.ReadUInt16BE() : br.ReadUInt16();
-            if (length == 0) return string.Empty;
+            if (length == 0) return ReadOnlySpan<char>.Empty;
             var chars = br.ReadChars(length);
-            return new string(chars);
+            return chars.AsSpan();
         }
 
         internal static ushort ReadUInt16BE(this BinaryReader br)

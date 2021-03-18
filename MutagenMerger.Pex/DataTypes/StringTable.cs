@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using JetBrains.Annotations;
 using MutagenMerger.Pex.Extensions;
@@ -9,7 +9,7 @@ namespace MutagenMerger.Pex.DataTypes
     [PublicAPI]
     public class StringTable : IStringTable
     {
-        public List<string> Strings { get; set; } = new();
+        public string[] Strings { get; set; } = Array.Empty<string>();
      
         public StringTable() { }
         
@@ -18,9 +18,11 @@ namespace MutagenMerger.Pex.DataTypes
         public void Read(BinaryReader br)
         {
             var count = br.ReadUInt16BE();
+            Strings = new string[count];
+            
             for (var i = 0; i < count; i++)
             {
-                Strings.Add(br.ReadWString());
+                Strings[i] = br.ReadWString();
             }
         }
 
