@@ -4,6 +4,7 @@ using System.IO;
 using JetBrains.Annotations;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Skyrim;
+using Noggog;
 
 namespace MutagenMerger.Lib
 {

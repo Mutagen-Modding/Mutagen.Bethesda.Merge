@@ -66,14 +66,7 @@ namespace MutagenMerger.Lib
                 }
             }
             
-            foreach (var brokenFormKey in outputMod.ContainedFormLinks
-                .Where(x => x.FormKey.IsNull && x.FormKey.ModKey != outputMod.ModKey && !x.FormKey.ModKey.IsNull)
-                .Select(x => x.FormKey)
-                .Distinct())
-            {
-                mapping.Add(brokenFormKey, FormKey.Null);
-            }
-            
+            // TODO: wait for 0.27.1-prerelease9 with duplicated-null-form-key-handling (https://github.com/Mutagen-Modding/Mutagen/commit/dfc29a772cce61e4537b1eef081402c80493adae)
             outputMod.RemapLinks(mapping);
         }
     }

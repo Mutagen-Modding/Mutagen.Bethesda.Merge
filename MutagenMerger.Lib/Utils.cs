@@ -6,7 +6,7 @@ namespace MutagenMerger.Lib
     {
         public static BinaryWriteParameters SafeBinaryWriteParameters => new()
         {
-                MasterFlag = BinaryWriteParameters.MasterFlagOption.ExceptionOnMismatch,
+                MasterFlag = BinaryWriteParameters.MasterFlagOption.ChangeToMatchModKey,
                 ModKey = BinaryWriteParameters.ModKeyOption.CorrectToPath,
                 RecordCount = BinaryWriteParameters.RecordCountOption.Iterate,
                 LightMasterLimit = BinaryWriteParameters.LightMasterLimitOption.ExceptionOnOverflow,
