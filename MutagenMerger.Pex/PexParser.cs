@@ -17,6 +17,7 @@ namespace MutagenMerger.Pex
             using var fs = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
             using var br = new BinaryReader(fs, Encoding.UTF8);
 
+            //https://en.uesp.net/wiki/Skyrim_Mod:Compiled_Script_File_Format
             var pexFile = new PexFile(br);
 
             if (fs.Position != fs.Length)
