@@ -15,7 +15,19 @@ namespace MutagenMerger.Pex.DataTypes
     {
         public ushort NameIndex { get; set; } = ushort.MaxValue;
 
-        public IPexObjectData? Data { get; set; }
+        public ushort ParentClassNameIndex { get; set; } = ushort.MaxValue;
+        public ushort DocStringIndex { get; set; } = ushort.MaxValue;
+        public uint UserFlags { get; set; } = uint.MaxValue;
+        public ushort AutoStateNameIndex { get; set; } = ushort.MaxValue;
+        public List<IPexObjectVariable> Variables { get; set; } = new();
+        public List<IPexObjectProperty> Properties { get; set; } = new();
+        public List<IPexObjectState> States { get; set; } = new();
+        
+        public string GetParentClassName(IStringTable stringTable) => stringTable.GetFromIndex(ParentClassNameIndex);
+
+        public string GetDocString(IStringTable stringTable) => stringTable.GetFromIndex(DocStringIndex);
+
+        public string GetAutoStateName(IStringTable stringTable) => stringTable.GetFromIndex(AutoStateNameIndex);
 
         public string GetName(IStringTable stringTable) => stringTable.GetFromIndex(NameIndex);
         
@@ -25,33 +37,14 @@ namespace MutagenMerger.Pex.DataTypes
         public void Read(BinaryReader br)
         {
             NameIndex = br.ReadUInt16BE();
-            var size = br.ReadUInt32BE()-4;
-            Data = new PexObjectData(br);
-        }
-    }
-
-    [PublicAPI]
-    public class PexObjectData : IPexObjectData
-    {
-        public ushort ParentClassNameIndex { get; set; } = ushort.MaxValue;
-        public ushort DocStringIndex { get; set; } = ushort.MaxValue;
-        public uint UserFlags { get; set; } = uint.MaxValue;
-        public ushort AutoStateNameIndex { get; set; } = ushort.MaxValue;
-        public List<IPexObjectDataVariable> Variables { get; set; } = new();
-        public List<IPexObjectDataProperty> Properties { get; set; } = new();
-        public List<IPexObjectDataState> States { get; set; } = new();
-        
-        public string GetParentClassName(IStringTable stringTable) => stringTable.GetFromIndex(ParentClassNameIndex);
-
-        public string GetDocString(IStringTable stringTable) => stringTable.GetFromIndex(DocStringIndex);
-
-        public string GetAutoStateName(IStringTable stringTable) => stringTable.GetFromIndex(AutoStateNameIndex);
-        
-        public PexObjectData() { }
-        public PexObjectData(BinaryReader br) { Read(br); }
-        
-        public void Read(BinaryReader br)
-        {
+            
+            /*
+             * This is the size of the entire object in bytes not some count variable for a loop. This also includes
+             * the size of itself thus the - sizeof(uint)
+             */
+            var size = br.ReadUInt32BE() - sizeof(uint);
+            var currentPos = br.BaseStream.Position;
+            
             ParentClassNameIndex = br.ReadUInt16BE();
             DocStringIndex = br.ReadUInt16BE();
             UserFlags = br.ReadUInt32BE();
@@ -60,40 +53,45 @@ namespace MutagenMerger.Pex.DataTypes
             var variables = br.ReadUInt16BE();
             for (var i = 0; i < variables; i++)
             {
-                var variable = new PexObjectDataVariable(br);
+                var variable = new PexObjectVariable(br);
                 Variables.Add(variable);
             }
 
             var properties = br.ReadUInt16BE();
             for (var i = 0; i < properties; i++)
             {
-                var property = new PexObjectDataProperty(br);
+                var property = new PexObjectProperty(br);
                 Properties.Add(property);
             }
 
             var states = br.ReadUInt16BE();
             for (var i = 0; i < states; i++)
             {
-                var state = new PexObjectDataState(br);
+                var state = new PexObjectState(br);
                 States.Add(state);
             }
+
+            var newPos = br.BaseStream.Position;
+            if (newPos != currentPos + size)
+                throw new PexParsingException("Current position in Stream does not match expected position: " +
+                                              $"Current: {newPos} Expected: {currentPos + size}");
         }
     }
 
     [PublicAPI]
-    public class PexObjectDataVariable : IPexObjectDataVariable
+    public class PexObjectVariable : IPexObjectVariable
     {
         public ushort NameIndex { get; set; } = ushort.MaxValue;
         public ushort TypeNameIndex { get; set; } = ushort.MaxValue;
         public uint UserFlags { get; set; } = uint.MaxValue;
-        public IPexObjectDataVariableData? VariableData { get; set; }
+        public IPexObjectVariableData? VariableData { get; set; }
         
         public string GetName(IStringTable stringTable) => stringTable.GetFromIndex(NameIndex);
 
         public string GetTypeName(IStringTable stringTable) => stringTable.GetFromIndex(TypeNameIndex);
         
-        public PexObjectDataVariable() { }
-        public PexObjectDataVariable(BinaryReader br) { Read(br); }
+        public PexObjectVariable() { }
+        public PexObjectVariable(BinaryReader br) { Read(br); }
         
         public void Read(BinaryReader br)
         {
@@ -101,12 +99,12 @@ namespace MutagenMerger.Pex.DataTypes
             TypeNameIndex = br.ReadUInt16BE();
             UserFlags = br.ReadUInt32BE();
 
-            VariableData = new PexObjectDataVariableData(br);
+            VariableData = new PexObjectVariableData(br);
         }
     }
 
     [PublicAPI]
-    public class PexObjectDataVariableData : IPexObjectDataVariableData
+    public class PexObjectVariableData : IPexObjectVariableData
     {
         public VariableType VariableType { get; set; } = VariableType.Null;
         public ushort? StringValueIndex { get; set; }
@@ -117,8 +115,8 @@ namespace MutagenMerger.Pex.DataTypes
         public string? GetStringValue(IStringTable stringTable) =>
             StringValueIndex.HasValue ? stringTable.GetFromIndex(StringValueIndex.Value) : null; 
         
-        public PexObjectDataVariableData() { }
-        public PexObjectDataVariableData(BinaryReader br) { Read(br); }
+        public PexObjectVariableData() { }
+        public PexObjectVariableData(BinaryReader br) { Read(br); }
         
         public void Read(BinaryReader br)
         {
@@ -148,7 +146,7 @@ namespace MutagenMerger.Pex.DataTypes
     }
 
     [PublicAPI]
-    public class PexObjectDataProperty : IPexObjectDataProperty
+    public class PexObjectProperty : IPexObjectProperty
     {
         public ushort NameIndex { get; set; } = ushort.MaxValue;
         public ushort TypeNameIndex { get; set; } = ushort.MaxValue;
@@ -166,8 +164,8 @@ namespace MutagenMerger.Pex.DataTypes
         public string? GetAutoVarName(IStringTable stringTable) =>
             AutoVarNameIndex.HasValue ? stringTable.GetFromIndex(AutoVarNameIndex.Value) : null;
         
-        public PexObjectDataProperty() { }
-        public PexObjectDataProperty(BinaryReader br) { Read(br); }
+        public PexObjectProperty() { }
+        public PexObjectProperty(BinaryReader br) { Read(br); }
         
         public void Read(BinaryReader br)
         {
@@ -197,7 +195,7 @@ namespace MutagenMerger.Pex.DataTypes
     }
 
     [PublicAPI]
-    public class PexObjectDataState : IPexObjectDataState
+    public class PexObjectState : IPexObjectState
     {
         public ushort NameIndex { get; set; } = ushort.MaxValue;
 
@@ -205,8 +203,8 @@ namespace MutagenMerger.Pex.DataTypes
 
         public string GetName(IStringTable stringTable) => stringTable.GetFromIndex(NameIndex);
         
-        public PexObjectDataState() { }
-        public PexObjectDataState(BinaryReader br) { Read(br); }
+        public PexObjectState() { }
+        public PexObjectState(BinaryReader br) { Read(br); }
         
         public void Read(BinaryReader br)
         {
@@ -311,7 +309,7 @@ namespace MutagenMerger.Pex.DataTypes
     public class PexObjectFunctionInstruction : IPexObjectFunctionInstruction
     {
         public InstructionOpcode OpCode { get; set; } = InstructionOpcode.nop;
-        public List<IPexObjectDataVariableData> Arguments { get; set; } = new();
+        public List<IPexObjectVariableData> Arguments { get; set; } = new();
         
         public PexObjectFunctionInstruction() { }
         public PexObjectFunctionInstruction(BinaryReader br) { Read(br); }
@@ -323,7 +321,7 @@ namespace MutagenMerger.Pex.DataTypes
             var arguments = InstructionOpCodeArguments.GetArguments(OpCode);
             foreach (var current in arguments)
             {
-                var argument = new PexObjectDataVariableData(br);
+                var argument = new PexObjectVariableData(br);
                 Arguments.Add(argument);
 
                 if (current == '*')
@@ -332,7 +330,7 @@ namespace MutagenMerger.Pex.DataTypes
                         throw new PexParsingException($"Variable-Length Arguments require an Integer Argument! Argument is {argument.VariableType}");
                     for (var i = 0; i < argument.IntValue.Value; i++)
                     {
-                        var anotherArgument = new PexObjectDataVariableData(br);
+                        var anotherArgument = new PexObjectVariableData(br);
                         Arguments.Add(anotherArgument);
                     }
                 }

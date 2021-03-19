@@ -8,17 +8,7 @@ namespace MutagenMerger.Pex.Interfaces
     public interface IPexObject : IBinaryObject
     {
         public ushort NameIndex { get; set; }
-
-        //TODO: merge IPexObject with IPexObjectData, no point in having 2 classes for this
         
-        public IPexObjectData? Data { get; set; }
-        
-        public string GetName(IStringTable stringTable);
-    }
-
-    [PublicAPI]
-    public interface IPexObjectData : IBinaryObject
-    {
         public ushort ParentClassNameIndex { get; set; }
         
         public ushort DocStringIndex { get; set; }
@@ -27,19 +17,20 @@ namespace MutagenMerger.Pex.Interfaces
         
         public ushort AutoStateNameIndex { get; set; }
         
-        public List<IPexObjectDataVariable> Variables { get; set; }
+        public List<IPexObjectVariable> Variables { get; set; }
         
-        public List<IPexObjectDataProperty> Properties { get; set; }
+        public List<IPexObjectProperty> Properties { get; set; }
         
-        public List<IPexObjectDataState> States { get; set; }
+        public List<IPexObjectState> States { get; set; }
 
         public string GetParentClassName(IStringTable stringTable);
         public string GetDocString(IStringTable stringTable);
         public string GetAutoStateName(IStringTable stringTable);
+        public string GetName(IStringTable stringTable);
     }
 
     [PublicAPI]
-    public interface IPexObjectDataVariable : IBinaryObject
+    public interface IPexObjectVariable : IBinaryObject
     {
         public ushort NameIndex { get; set; }
         
@@ -47,14 +38,14 @@ namespace MutagenMerger.Pex.Interfaces
         
         public uint UserFlags { get; set; }
         
-        public IPexObjectDataVariableData? VariableData { get; set; }
+        public IPexObjectVariableData? VariableData { get; set; }
 
         public string GetName(IStringTable stringTable);
         public string GetTypeName(IStringTable stringTable);
     }
     
     [PublicAPI]
-    public interface IPexObjectDataVariableData : IBinaryObject
+    public interface IPexObjectVariableData : IBinaryObject
     {
         public VariableType VariableType { get; set; }
         
@@ -70,7 +61,7 @@ namespace MutagenMerger.Pex.Interfaces
     }
 
     [PublicAPI]
-    public interface IPexObjectDataProperty : IBinaryObject
+    public interface IPexObjectProperty : IBinaryObject
     {
         public ushort NameIndex { get; set; }
         
@@ -94,7 +85,7 @@ namespace MutagenMerger.Pex.Interfaces
     }
 
     [PublicAPI]
-    public interface IPexObjectDataState : IBinaryObject
+    public interface IPexObjectState : IBinaryObject
     {
         public ushort NameIndex { get; set; }
         
@@ -150,6 +141,6 @@ namespace MutagenMerger.Pex.Interfaces
     {
         public InstructionOpcode OpCode { get; set; }
         
-        public List<IPexObjectDataVariableData> Arguments { get; set; }
+        public List<IPexObjectVariableData> Arguments { get; set; }
     }
 }
