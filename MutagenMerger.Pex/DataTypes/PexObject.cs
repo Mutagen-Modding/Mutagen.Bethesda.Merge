@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using JetBrains.Annotations;
 using MutagenMerger.Pex.Enums;
+using MutagenMerger.Pex.Exceptions;
 using MutagenMerger.Pex.Extensions;
 using MutagenMerger.Pex.Interfaces;
 
@@ -328,7 +329,7 @@ namespace MutagenMerger.Pex.DataTypes
                 if (current == '*')
                 {
                     if (argument.VariableType != VariableType.Integer || !argument.IntValue.HasValue)
-                        throw new NotImplementedException("Variable-Length Arguments require an Integer Argument!");
+                        throw new PexParsingException($"Variable-Length Arguments require an Integer Argument! Argument is {argument.VariableType}");
                     for (var i = 0; i < argument.IntValue.Value; i++)
                     {
                         var anotherArgument = new PexObjectDataVariableData(br);
@@ -340,8 +341,7 @@ namespace MutagenMerger.Pex.DataTypes
                 {
                     //u: unsigned integer?
                     Debugger.Break();
-                    throw new NotImplementedException(
-                        $"Argument Type 'u' reached. Please report this on GitHub and attach the pex file.");
+                    throw new NotImplementedException("Argument Type 'u' reached. Please report this on GitHub and attach the pex file.");
                 }
             }
         }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using JetBrains.Annotations;
+using MutagenMerger.Pex.Exceptions;
 using MutagenMerger.Pex.Extensions;
 using MutagenMerger.Pex.Interfaces;
 
@@ -36,12 +37,14 @@ namespace MutagenMerger.Pex.DataTypes
 
         public PexFile() { }
         public PexFile(BinaryReader br) { Read(br); }
+
+        private const uint PexMagic = 0xFA57C0DE;
         
         public void Read(BinaryReader br)
         {
             Magic = br.ReadUInt32BE();
-            if (Magic != 0xFA57C0DE)
-                throw new NotImplementedException("File Header is not FASTCODE! Who the hell thought this was a nice magic number...");
+            if (Magic != PexMagic)
+                throw new PexParsingException($"File does not have fast code! Magic does not match {PexMagic:x8} is {Magic:x8}");
             
             MajorVersion = br.ReadByte();
             MinorVersion = br.ReadByte();

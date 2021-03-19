@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.IO;
 using System.Text;
 using MutagenMerger.Pex.DataTypes;
+using MutagenMerger.Pex.Exceptions;
 using MutagenMerger.Pex.Interfaces;
 
 namespace MutagenMerger.Pex
@@ -21,7 +22,10 @@ namespace MutagenMerger.Pex
             var pexFile = new PexFile(br);
 
             if (fs.Position != fs.Length)
-                throw new NotImplementedException("Finished reading but we are not at the end of the stream!");
+                throw new PexParsingException("Finished reading but end of the stream was not reached! " +
+                                              $"Current position: {fs.Position} " +
+                                              $"Stream length: {fs.Length} " +
+                                              $"Missing: {fs.Length - fs.Position}");
             
             return pexFile;
         }
