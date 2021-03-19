@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using JetBrains.Annotations;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Skyrim;
@@ -32,14 +33,11 @@ namespace MutagenMerger.Lib
         
         public void Merge()
         {
-            _loadOrder
-                .PriorityOrder
-                //.ListedOrder
-                .Resolve()
-                .MergeMods<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(
-                    _modsToMerge,
-                    _outputMod,
-                    out var mapping);
+            var mods = _loadOrder.PriorityOrder.Resolve();
+            var mergingMods = mods.Where(x => _modsToMerge.Contains(x.ModKey));
+            mergingMods.MergeMods<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(
+                _outputMod,
+                out var mapping);
         }
 
         public void Dispose()

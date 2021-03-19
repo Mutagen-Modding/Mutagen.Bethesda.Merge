@@ -9,7 +9,6 @@ namespace MutagenMerger.Lib
     {
         public static void MergeMods<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
             this IEnumerable<TModGetter> mods,
-            IEnumerable<ModKey> modsToMerge,
             TMod outputMod,
             out Dictionary<FormKey, FormKey> mapping)
             where TMod : class, TModGetter, IMod
@@ -17,24 +16,18 @@ namespace MutagenMerger.Lib
             where TMajorRecord : class, TMajorRecordGetter, IMajorRecord
             where TMajorRecordGetter : class, IMajorRecordGetter
         {
-            //var processedKeys = new HashSet<FormKey>();
-
             // Just in case user gave us a lazy IEnumerable
             var modsCached = mods.ToArray();
 
-            var modsToMergeKeys = modsToMerge.ToHashSet();
+            var modsToMergeKeys = modsCached.Select(x => x.ModKey).ToArray();
 
             var linkCache = modsCached.ToImmutableLinkCache();
 
             mapping = new Dictionary<FormKey, FormKey>();
 
             foreach (var rec in modsCached
-                .Where(x => modsToMergeKeys.Contains(x.ModKey))
                 .WinningOverrideContexts<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(linkCache))
             {
-                //don't deal with records from plugins we don't want to merge
-                //if (!modsToMergeKeys.Contains(rec.ModKey)) continue;
-                
                 if (rec.ModKey == rec.Record.FormKey.ModKey)
                 {
                     //record is not an override so we can just duplicate it
