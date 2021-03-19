@@ -29,10 +29,11 @@ namespace MutagenMerger.Lib
             mapping = new Dictionary<FormKey, FormKey>();
 
             foreach (var rec in modsCached
+                .Where(x => modsToMergeKeys.Contains(x.ModKey))
                 .WinningOverrideContexts<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(linkCache))
             {
                 //don't deal with records from plugins we don't want to merge
-                if (!modsToMergeKeys.Contains(rec.ModKey)) continue;
+                //if (!modsToMergeKeys.Contains(rec.ModKey)) continue;
                 
                 if (rec.ModKey == rec.Record.FormKey.ModKey)
                 {
