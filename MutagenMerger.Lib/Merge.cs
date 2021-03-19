@@ -18,9 +18,9 @@ namespace MutagenMerger.Lib
         {
             // Just in case user gave us a lazy IEnumerable
             var modsCached = mods.ToArray();
-
-            var modsToMergeKeys = modsCached.Select(x => x.ModKey).ToArray();
-
+            
+            var modsToMerge = modsCached.Select(x => x.ModKey).ToHashSet();
+            
             var linkCache = modsCached.ToImmutableLinkCache();
 
             mapping = new Dictionary<FormKey, FormKey>();
@@ -45,7 +45,7 @@ namespace MutagenMerger.Lib
                      * and we also don't want "outdated" records (only overrides in that case).
                      * This explanation probably still won't make sense but whatever.
                      */
-                    if (modsToMergeKeys.Contains(rec.Record.FormKey.ModKey))
+                    if (modsToMerge.Contains(rec.Record.FormKey.ModKey))
                     {
                         if (mapping.ContainsKey(rec.Record.FormKey))
                             throw new NotImplementedException();
