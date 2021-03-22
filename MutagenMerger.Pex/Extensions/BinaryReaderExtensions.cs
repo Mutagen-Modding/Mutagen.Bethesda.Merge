@@ -6,14 +6,14 @@ namespace MutagenMerger.Pex.Extensions
 {
     internal static class BinaryReaderExtensions
     {
-        internal static string ReadWString(this BinaryReader br, bool bigEndian = true)
+        internal static string ReadWString(this BinaryReader br)
         {
-            return br.ReadWStringAsSpan(bigEndian).ToString();
+            return br.ReadWStringAsSpan().ToString();
         }
 
-        internal static ReadOnlySpan<char> ReadWStringAsSpan(this BinaryReader br, bool bigEndian = true)
+        internal static ReadOnlySpan<char> ReadWStringAsSpan(this BinaryReader br)
         {
-            var length = bigEndian ? br.ReadUInt16BE() : br.ReadUInt16();
+            var length = br.ReadUInt16BE();
             if (length == 0) return ReadOnlySpan<char>.Empty;
             var chars = br.ReadChars(length);
             return chars.AsSpan();
