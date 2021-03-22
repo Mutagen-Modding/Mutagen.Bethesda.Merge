@@ -76,6 +76,47 @@ namespace MutagenMerger.Pex.DataTypes
                 throw new PexParsingException("Current position in Stream does not match expected position: " +
                                               $"Current: {newPos} Expected: {currentPos + size}");
         }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.WriteUInt16BE(NameIndex);
+
+            //needed for later changing
+            var currentPos = bw.BaseStream.Position;
+            bw.WriteUInt32BE(sizeof(uint));
+
+            bw.WriteUInt16BE(ParentClassNameIndex);
+            bw.WriteUInt16BE(DocStringIndex);
+            bw.WriteUInt32BE(UserFlags);
+            bw.WriteUInt16BE(AutoStateNameIndex);
+            
+            bw.WriteUInt16BE((ushort) Variables.Count);
+            foreach (var objectVariable in Variables)
+            {
+                objectVariable.Write(bw);
+            }
+            
+            bw.WriteUInt16BE((ushort) Properties.Count);
+            foreach (var objectProperty in Properties)
+            {
+                objectProperty.Write(bw);
+            }
+            
+            bw.WriteUInt16BE((ushort) States.Count);
+            foreach (var objectState in States)
+            {
+                objectState.Write(bw);
+            }
+            
+            //calculate object size, go back, change it and return to the current position
+            var newPos = bw.BaseStream.Position;
+            bw.BaseStream.Position = currentPos;
+
+            var objectSize = newPos - currentPos;
+            bw.WriteUInt32BE((uint) objectSize);
+
+            bw.BaseStream.Position = newPos;
+        }
     }
 
     [PublicAPI]
@@ -100,6 +141,15 @@ namespace MutagenMerger.Pex.DataTypes
             UserFlags = br.ReadUInt32BE();
 
             VariableData = new PexObjectVariableData(br);
+        }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.WriteUInt16BE(NameIndex);
+            bw.WriteUInt16BE(TypeNameIndex);
+            bw.WriteUInt32BE(UserFlags);
+            
+            VariableData?.Write(bw);
         }
     }
 
@@ -138,6 +188,31 @@ namespace MutagenMerger.Pex.DataTypes
                 case VariableType.Bool:
                     //TODO: use ReadByte instead?
                     BoolValue = br.ReadBoolean();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write((byte) VariableType);
+            switch (VariableType)
+            {
+                case VariableType.Null:
+                    break;
+                case VariableType.Identifier:
+                case VariableType.String:
+                    bw.WriteUInt16BE(StringValueIndex ?? ushort.MaxValue);
+                    break;
+                case VariableType.Integer:
+                    bw.WriteInt32BE(IntValue ?? int.MaxValue);
+                    break;
+                case VariableType.Float:
+                    bw.WriteSingleBE(FloatValue ?? float.MaxValue);
+                    break;
+                case VariableType.Bool:
+                    bw.Write(BoolValue ?? false);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -192,6 +267,32 @@ namespace MutagenMerger.Pex.DataTypes
                 WriteHandler = new PexObjectFunction(br);
             }
         }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.WriteUInt16BE(NameIndex);
+            bw.WriteUInt16BE(TypeNameIndex);
+            bw.WriteUInt16BE(DocStringIndex);
+            bw.WriteUInt32BE(UserFlags);
+
+            var flags = (byte) Flags;
+            bw.Write(flags);
+            
+            if ((flags & 4) != 0)
+            {
+                bw.WriteUInt16BE(AutoVarNameIndex ?? ushort.MaxValue);
+            }
+
+            if ((flags & 5) == 1)
+            {
+                ReadHandler?.Write(bw);
+            }
+
+            if ((flags & 6) == 2)
+            {
+                WriteHandler?.Write(bw);
+            }
+        }
     }
 
     [PublicAPI]
@@ -217,6 +318,16 @@ namespace MutagenMerger.Pex.DataTypes
                 Functions.Add(namedFunction);
             }
         }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.WriteUInt16BE(NameIndex);
+            bw.WriteUInt16BE((ushort) Functions.Count);
+            foreach (var namedFunction in Functions)
+            {
+                namedFunction.Write(bw);
+            }
+        }
     }
 
     [PublicAPI]
@@ -235,6 +346,12 @@ namespace MutagenMerger.Pex.DataTypes
         {
             FunctionNameIndex = br.ReadUInt16BE();
             Function = new PexObjectFunction(br);
+        }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.WriteUInt16BE(FunctionNameIndex);
+            Function?.Write(bw);
         }
     }
 
@@ -283,6 +400,32 @@ namespace MutagenMerger.Pex.DataTypes
                 Instructions.Add(instruction);
             }
         }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.WriteUInt16BE(ReturnTypeNameIndex);
+            bw.WriteUInt16BE(DocStringIndex);
+            bw.WriteUInt32BE(UserFlags);
+            bw.Write((byte) Flags);
+            
+            bw.WriteUInt16BE((ushort) Parameters.Count);
+            foreach (var parameter in Parameters)
+            {
+                parameter.Write(bw);
+            }
+            
+            bw.WriteUInt16BE((ushort) Locals.Count);
+            foreach (var local in Locals)
+            {
+                local.Write(bw);
+            }
+            
+            bw.WriteUInt16BE((ushort) Instructions.Count);
+            foreach (var instruction in Instructions)
+            {
+                instruction.Write(bw);
+            }
+        }
     }
 
     [PublicAPI]
@@ -302,6 +445,12 @@ namespace MutagenMerger.Pex.DataTypes
         {
             NameIndex = br.ReadUInt16BE();
             TypeNameIndex = br.ReadUInt16BE();
+        }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.WriteUInt16BE(NameIndex);
+            bw.WriteUInt16BE(TypeNameIndex);
         }
     }
 
@@ -341,6 +490,16 @@ namespace MutagenMerger.Pex.DataTypes
                     Debugger.Break();
                     throw new NotImplementedException("Argument Type 'u' reached. Please report this on GitHub and attach the pex file.");
                 }
+            }
+        }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write((byte) OpCode);
+
+            foreach (var argument in Arguments)
+            {
+                argument.Write(bw);
             }
         }
     }

@@ -72,5 +72,32 @@ namespace MutagenMerger.Pex.DataTypes
                 Objects.Add(pexObject);
             }
         }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.WriteUInt32BE(PexMagic);
+            bw.Write(MajorVersion);
+            bw.Write(MinorVersion);
+            bw.WriteUInt16BE(GameId);
+            bw.WriteUInt64BE(CompilationTime.ToUInt64());
+            bw.WriteWString(SourceFileName);
+            bw.WriteWString(Username);
+            bw.WriteWString(MachineName);
+            
+            StringTable?.Write(bw);
+            DebugInfo?.Write(bw);
+            
+            bw.WriteUInt16BE((ushort) UserFlags.Count);
+            foreach (var userFlag in UserFlags)
+            {
+                userFlag.Write(bw);
+            }
+            
+            bw.WriteUInt16BE((ushort) Objects.Count);
+            foreach (var pexObject in Objects)
+            {
+                pexObject.Write(bw);
+            }
+        }
     }
 }

@@ -22,5 +22,11 @@ namespace MutagenMerger.Pex.DataTypes
             NameIndex = br.ReadUInt16BE();
             FlagIndex = br.ReadByte();
         }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.WriteUInt16BE(NameIndex);
+            bw.Write(FlagIndex);
+        }
     }
 }

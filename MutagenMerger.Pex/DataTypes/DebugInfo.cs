@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using JetBrains.Annotations;
 using MutagenMerger.Pex.Extensions;
@@ -35,6 +34,21 @@ namespace MutagenMerger.Pex.DataTypes
                 Functions.Add(function);
             }
         }
+
+        public void Write(BinaryWriter bw)
+        {
+            // ReSharper disable RedundantCast
+            bw.Write(HasDebugInfo ? (byte) 1 : (byte) 0);
+            // ReSharper restore RedundantCast
+            if (!HasDebugInfo) return;
+            
+            bw.WriteUInt64BE(ModificationTime.ToUInt64());
+            bw.WriteUInt16BE((ushort) Functions.Count);
+            foreach (var debugFunction in Functions)
+            {
+                debugFunction.Write(bw);
+            }
+        }
     }
 
     [PublicAPI]
@@ -62,6 +76,20 @@ namespace MutagenMerger.Pex.DataTypes
             {
                 var lineNumber = br.ReadUInt16BE();
                 LineNumbers.Add(lineNumber);
+            }
+        }
+
+        public void Write(BinaryWriter bw)
+        {
+            bw.WriteUInt16BE(ObjectNameIndex);
+            bw.WriteUInt16BE(StateNameIndex);
+            bw.WriteUInt16BE(FunctionNameIndex);
+            bw.Write(FunctionType);
+            bw.WriteUInt16BE(InstructionCount);
+            
+            foreach (var lineNumber in LineNumbers)
+            {
+                bw.WriteUInt16BE(lineNumber);
             }
         }
 

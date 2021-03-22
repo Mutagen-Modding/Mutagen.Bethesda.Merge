@@ -26,6 +26,15 @@ namespace MutagenMerger.Pex.DataTypes
             }
         }
 
+        public void Write(BinaryWriter bw)
+        {
+            bw.WriteUInt16BE((ushort) Strings.Length);
+            foreach (var s in Strings)
+            {
+                bw.WriteWString(s);
+            }
+        }
+
         public string GetFromIndex(ushort index)
         {
             return Strings[index];

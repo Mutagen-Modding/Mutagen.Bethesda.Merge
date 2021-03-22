@@ -29,5 +29,19 @@ namespace MutagenMerger.Pex
             
             return pexFile;
         }
+
+        public static void WritePexFile(this IPexFile pexFile, string outputPath)
+        {
+            var dirName = Path.GetDirectoryName(outputPath);
+            Directory.CreateDirectory(dirName ?? string.Empty);
+            
+            if (File.Exists(outputPath))
+                File.Delete(outputPath);
+
+            using var fs = File.Open(outputPath, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+            using var bw = new BinaryWriter(fs, Encoding.UTF8);
+            
+            pexFile.Write(bw);
+        }
     }
 }
