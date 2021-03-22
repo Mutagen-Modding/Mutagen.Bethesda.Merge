@@ -486,9 +486,15 @@ namespace MutagenMerger.Pex.DataTypes
 
                 if (current == 'u')
                 {
-                    //u: unsigned integer?
-                    Debugger.Break();
-                    throw new NotImplementedException("Argument Type 'u' reached. Please report this on GitHub and attach the pex file.");
+                    //TODO: figure out what do to with this
+                    
+                    /*
+                     * u apparently means unsigned integer and indicates that the integer value we get should be
+                     * interpreted as an unsigned integer.
+                     */
+                    
+                    if (argument.VariableType != VariableType.Integer)
+                        throw new PexParsingException($"Argument is unsigned integer but Variable Type is not integer: {argument.VariableType}");
                 }
             }
         }
