@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using MutagenMerger.Pex;
 using Xunit;
 
@@ -6,14 +7,23 @@ namespace MutagenMerger.Tests
 {
     public class PexTests
     {
+        public static readonly IEnumerable<object[]> TestDataFiles = new List<object[]>
+        {
+            //from SKSE https://skse.silverlock.org/
+            new object[]{ "Actor.pex" },
+            new object[]{ "Art.pex" },
+            new object[]{ "FormType.pex" },
+            new object[]{ "Game.pex" },
+            new object[]{ "ObjectReference.pex" },
+            new object[]{ "Outfit.pex" },
+            new object[]{ "SoulGem.pex" },
+            
+            //from https://github.com/mwilsnd/SkyrimSE-SmoothCam/blob/master/CodeGen/MCM/SmoothCamMCM.pex
+            new object[]{ "SmoothCamMCM.pex" },
+        };
+        
         [Theory]
-        [InlineData("Actor.pex")]
-        [InlineData("Art.pex")]
-        [InlineData("FormType.pex")]
-        [InlineData("Game.pex")]
-        [InlineData("ObjectReference.pex")]
-        [InlineData("Outfit.pex")]
-        [InlineData("SoulGem.pex")]
+        [MemberData(nameof(TestDataFiles))]
         public void TestPexParsing(string file)
         {
             var path = Path.Combine("files", file);
@@ -23,13 +33,7 @@ namespace MutagenMerger.Tests
         }
 
         [Theory]
-        [InlineData("Actor.pex")]
-        [InlineData("Art.pex")]
-        [InlineData("FormType.pex")]
-        [InlineData("Game.pex")]
-        [InlineData("ObjectReference.pex")]
-        [InlineData("Outfit.pex")]
-        [InlineData("SoulGem.pex")]
+        [MemberData(nameof(TestDataFiles))]
         public void TestPexWriting(string file)
         {
             var inputFile = Path.Combine("files", file);
