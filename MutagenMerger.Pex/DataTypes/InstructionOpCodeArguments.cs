@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using MutagenMerger.Pex.Enums;
 
@@ -7,6 +9,7 @@ namespace MutagenMerger.Pex.DataTypes
     [PublicAPI]
     public static class InstructionOpCodeArguments
     {
+        [SuppressMessage("ReSharper", "StringLiteralTypo")]
         public static IReadOnlyList<string> Arguments => new[]
         {
             "", // 00
@@ -42,12 +45,16 @@ namespace MutagenMerger.Pex.DataTypes
             "Su",
             "SS",
             "SSI", // 20
-            "SIA"
+            "SIA",
+            "SSII",
+            "SSII"
         };
 
         public static string GetArguments(InstructionOpcode opcode)
         {
             var index = (byte) opcode;
+            if (index >= Arguments.Count)
+                throw new ArgumentOutOfRangeException(nameof(opcode), $"Out-of-range: {opcode} with index {index}");
             return Arguments[index];
         }
     }

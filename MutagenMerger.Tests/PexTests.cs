@@ -20,7 +20,11 @@ namespace MutagenMerger.Tests
             
             //from https://github.com/mwilsnd/SkyrimSE-SmoothCam/blob/master/CodeGen/MCM/SmoothCamMCM.pex
             new object[]{ "SmoothCamMCM.pex" },
-        };
+            
+            //from https://www.nexusmods.com/skyrimspecialedition/mods/18076
+            new object[]{ "nwsFollowerMCMExScript.pex" },
+            new object[]{ "nwsFollowerMCMScript.pex" },
+    };
         
         [Theory]
         [MemberData(nameof(TestDataFiles))]
