@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using JetBrains.Annotations;
+using MutagenMerger.Pex.Enums;
 using MutagenMerger.Pex.Extensions;
 using MutagenMerger.Pex.Interfaces;
 
@@ -57,7 +58,7 @@ namespace MutagenMerger.Pex.DataTypes
         public ushort ObjectNameIndex { get; set; } = ushort.MaxValue;
         public ushort StateNameIndex { get; set; } = ushort.MaxValue;
         public ushort FunctionNameIndex { get; set; } = ushort.MaxValue;
-        public byte FunctionType { get; set; } = byte.MaxValue;
+        public DebugFunctionType FunctionType { get; set; }
         public ushort InstructionCount { get; set; } = ushort.MaxValue;
         public List<ushort> LineNumbers { get; set; } = new();
 
@@ -69,7 +70,7 @@ namespace MutagenMerger.Pex.DataTypes
             ObjectNameIndex = br.ReadUInt16BE();
             StateNameIndex = br.ReadUInt16BE();
             FunctionNameIndex = br.ReadUInt16BE();
-            FunctionType = br.ReadByte();
+            FunctionType = (DebugFunctionType) br.ReadByte();
             InstructionCount = br.ReadUInt16BE();
 
             for (var i = 0; i < InstructionCount; i++)
@@ -84,7 +85,7 @@ namespace MutagenMerger.Pex.DataTypes
             bw.WriteUInt16BE(ObjectNameIndex);
             bw.WriteUInt16BE(StateNameIndex);
             bw.WriteUInt16BE(FunctionNameIndex);
-            bw.Write(FunctionType);
+            bw.Write((byte) FunctionType);
             bw.WriteUInt16BE(InstructionCount);
             
             foreach (var lineNumber in LineNumbers)

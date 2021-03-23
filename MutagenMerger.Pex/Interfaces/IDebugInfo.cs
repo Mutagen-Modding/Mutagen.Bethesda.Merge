@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using MutagenMerger.Pex.Enums;
 
 namespace MutagenMerger.Pex.Interfaces
 {
@@ -23,8 +24,7 @@ namespace MutagenMerger.Pex.Interfaces
         
         public ushort FunctionNameIndex { get; set; }
         
-        //TODO: make enum
-        public byte FunctionType { get; set; }
+        public DebugFunctionType FunctionType { get; set; }
         
         public ushort InstructionCount { get; set; }
         
