@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using JetBrains.Annotations;
 using MutagenMerger.Pex.Enums;
@@ -18,6 +17,7 @@ namespace MutagenMerger.Pex.DataTypes
         public ushort ParentClassNameIndex { get; set; } = ushort.MaxValue;
         public ushort DocStringIndex { get; set; } = ushort.MaxValue;
         public uint UserFlags { get; set; } = uint.MaxValue;
+        
         public ushort AutoStateNameIndex { get; set; } = ushort.MaxValue;
         public List<IPexObjectVariable> Variables { get; set; } = new();
         public List<IPexObjectProperty> Properties { get; set; } = new();
@@ -30,6 +30,8 @@ namespace MutagenMerger.Pex.DataTypes
         public string GetAutoStateName(IStringTable stringTable) => stringTable.GetFromIndex(AutoStateNameIndex);
 
         public string GetName(IStringTable stringTable) => stringTable.GetFromIndex(NameIndex);
+        
+        public List<IUserFlag> GetUserFlags(IUserFlagsTable userFlagsTable) => userFlagsTable.GetUserFlags(UserFlags);
         
         public PexObject() { }
         public PexObject(BinaryReader br) { Read(br); }
@@ -130,6 +132,8 @@ namespace MutagenMerger.Pex.DataTypes
         public string GetName(IStringTable stringTable) => stringTable.GetFromIndex(NameIndex);
 
         public string GetTypeName(IStringTable stringTable) => stringTable.GetFromIndex(TypeNameIndex);
+        
+        public List<IUserFlag> GetUserFlags(IUserFlagsTable userFlagsTable) => userFlagsTable.GetUserFlags(UserFlags);
         
         public PexObjectVariable() { }
         public PexObjectVariable(BinaryReader br) { Read(br); }
@@ -238,6 +242,8 @@ namespace MutagenMerger.Pex.DataTypes
 
         public string? GetAutoVarName(IStringTable stringTable) =>
             AutoVarNameIndex.HasValue ? stringTable.GetFromIndex(AutoVarNameIndex.Value) : null;
+        
+        public List<IUserFlag> GetUserFlags(IUserFlagsTable userFlagsTable) => userFlagsTable.GetUserFlags(UserFlags);
         
         public PexObjectProperty() { }
         public PexObjectProperty(BinaryReader br) { Read(br); }
@@ -368,6 +374,7 @@ namespace MutagenMerger.Pex.DataTypes
         
         public string GetReturnTypeName(IStringTable stringTable) => stringTable.GetFromIndex(ReturnTypeNameIndex);
         public string GetDocString(IStringTable stringTable) => stringTable.GetFromIndex(DocStringIndex);
+        public List<IUserFlag> GetUserFlags(IUserFlagsTable userFlagsTable) => userFlagsTable.GetUserFlags(UserFlags);
         
         public PexObjectFunction() { }
         public PexObjectFunction(BinaryReader br) { Read(br); }

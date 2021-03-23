@@ -31,7 +31,7 @@ namespace MutagenMerger.Pex.DataTypes
         
         public IDebugInfo? DebugInfo { get; set; }
 
-        public List<IUserFlag> UserFlags { get; set; } = new();
+        public IUserFlagsTable? UserFlags { get; set; }
 
         public List<IPexObject> Objects { get; set; } = new();
 
@@ -55,15 +55,8 @@ namespace MutagenMerger.Pex.DataTypes
             MachineName = br.ReadWString();
 
             StringTable = new StringTable(br);
-
             DebugInfo = new DebugInfo(br);
-
-            var userFlagCount = br.ReadUInt16BE();
-            for (var i = 0; i < userFlagCount; i++)
-            {
-                var userFlag = new UserFlag(br);
-                UserFlags.Add(userFlag);
-            }
+            UserFlags = new UserFlagsTable(br);
 
             var objectCount = br.ReadUInt16BE();
             for (var i = 0; i < objectCount; i++)
@@ -86,13 +79,8 @@ namespace MutagenMerger.Pex.DataTypes
             
             StringTable?.Write(bw);
             DebugInfo?.Write(bw);
-            
-            bw.WriteUInt16BE((ushort) UserFlags.Count);
-            foreach (var userFlag in UserFlags)
-            {
-                userFlag.Write(bw);
-            }
-            
+            UserFlags?.Write(bw);
+
             bw.WriteUInt16BE((ushort) Objects.Count);
             foreach (var pexObject in Objects)
             {

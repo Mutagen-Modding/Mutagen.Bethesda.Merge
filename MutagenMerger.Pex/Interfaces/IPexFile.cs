@@ -27,7 +27,7 @@ namespace MutagenMerger.Pex.Interfaces
         
         public IDebugInfo? DebugInfo { get; set; }
         
-        public List<IUserFlag> UserFlags { get; set; }
+        public IUserFlagsTable? UserFlags { get; set; }
         
         public List<IPexObject> Objects { get; set; }
     }

@@ -5,16 +5,14 @@ using MutagenMerger.Pex.Enums;
 namespace MutagenMerger.Pex.Interfaces
 {
     [PublicAPI]
-    public interface IPexObject : IBinaryObject
+    public interface IPexObject : IBinaryObject, IHasUserFlags
     {
         public ushort NameIndex { get; set; }
         
         public ushort ParentClassNameIndex { get; set; }
         
         public ushort DocStringIndex { get; set; }
-        
-        public uint UserFlags { get; set; }
-        
+
         public ushort AutoStateNameIndex { get; set; }
         
         public List<IPexObjectVariable> Variables { get; set; }
@@ -30,14 +28,12 @@ namespace MutagenMerger.Pex.Interfaces
     }
 
     [PublicAPI]
-    public interface IPexObjectVariable : IBinaryObject
+    public interface IPexObjectVariable : IBinaryObject, IHasUserFlags
     {
         public ushort NameIndex { get; set; }
         
         public ushort TypeNameIndex { get; set; }
-        
-        public uint UserFlags { get; set; }
-        
+
         public IPexObjectVariableData? VariableData { get; set; }
 
         public string GetName(IStringTable stringTable);
@@ -61,16 +57,14 @@ namespace MutagenMerger.Pex.Interfaces
     }
 
     [PublicAPI]
-    public interface IPexObjectProperty : IBinaryObject
+    public interface IPexObjectProperty : IBinaryObject, IHasUserFlags
     {
         public ushort NameIndex { get; set; }
         
         public ushort TypeNameIndex { get; set; }
         
         public ushort DocStringIndex { get; set; }
-        
-        public uint UserFlags { get; set; }
-        
+
         public PropertyFlags Flags { get; set; }
         
         public ushort? AutoVarNameIndex { get; set; }
@@ -105,14 +99,12 @@ namespace MutagenMerger.Pex.Interfaces
     }
 
     [PublicAPI]
-    public interface IPexObjectFunction : IBinaryObject
+    public interface IPexObjectFunction : IBinaryObject, IHasUserFlags
     {
         public ushort ReturnTypeNameIndex { get; set; }
         
         public ushort DocStringIndex { get; set; }
-        
-        public uint UserFlags { get; set; }
-        
+
         public FunctionFlags Flags { get; set; }
         
         public List<IPexObjectFunctionVariable> Parameters { get; set; }
