@@ -26,7 +26,6 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - uses: actions/upload-artifact@v2
-      if: github.event == 'push'
       with:
         name: artifact
         path: MutagenMerger/MutagenMerger.CLI/bin/Debug/net5.0/
