@@ -17,8 +17,11 @@ namespace MutagenMerger.CLI
         [Option("pluginslist", HelpText = "Load plugins from plugins.txt")]
         public string PluginsTxt { get; set; } = string.Empty;
         
-        [Option("merge", Min = 1, Max = 256, Required = true, HelpText = "Plugins to merge")]
+        [Option("merge", Min = 1, Max = 256, HelpText = "Plugins to merge")]
         public IEnumerable<string> PluginsToMerge { get; set; } = Array.Empty<string>();
+
+        [Option("mergefile", HelpText = "Get plugins to merge from file")]
+        public string PluginsMergeTxt { get; set; } = string.Empty;
         
         [Option("output", Required = true, HelpText = "Output file name")]
         public string Output { get; set; } = string.Empty;

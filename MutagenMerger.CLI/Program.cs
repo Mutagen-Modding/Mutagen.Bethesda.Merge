@@ -27,10 +27,14 @@ namespace MutagenMerger.CLI
                 : options.Plugins
                     .Select(x => ModKey.FromNameAndExtension(x))
                     .ToList();
-            var modsToMerge = options.PluginsToMerge
-                .Select(x => ModKey.FromNameAndExtension(x))
-                .ToList();
-
+            
+            var modsToMerge = options.PluginsMergeTxt != string.Empty
+                ? (await File.ReadAllLinesAsync(options.PluginsMergeTxt))
+                    .Select(x => ModKey.FromNameAndExtension(x))
+                    .ToList()
+                : options.PluginsToMerge
+                    .Select(x => ModKey.FromNameAndExtension(x))
+                    .ToList();
             var sw = new Stopwatch();
             sw.Start();
             using (var merger = new Merger(options.DataFolder, plugins, modsToMerge,
@@ -39,7 +43,7 @@ namespace MutagenMerger.CLI
                 merger.Merge();
             }
             
-            Console.WriteLine($"Merged {modsToMerge.Count} in {sw.ElapsedMilliseconds}ms");
+            Console.WriteLine($"Merged {modsToMerge.Count} plugins in {sw.ElapsedMilliseconds}ms");
             sw.Stop();
         }
     }
