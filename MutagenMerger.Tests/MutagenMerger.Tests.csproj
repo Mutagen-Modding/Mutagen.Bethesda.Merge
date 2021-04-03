@@ -20,7 +20,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\MutagenMerger.Lib\MutagenMerger.Lib.csproj" />
-      <ProjectReference Include="..\MutagenMerger.Pex\MutagenMerger.Pex.csproj" />
     </ItemGroup>
 
     <ItemGroup>
