@@ -1,4 +1,5 @@
 ﻿using Mutagen.Bethesda;
+using Mutagen.Bethesda.Plugins.Binary.Parameters;
 
 namespace MutagenMerger.Lib
 {
@@ -6,13 +7,13 @@ namespace MutagenMerger.Lib
     {
         public static BinaryWriteParameters SafeBinaryWriteParameters => new()
         {
-                MasterFlag = BinaryWriteParameters.MasterFlagOption.ChangeToMatchModKey,
-                ModKey = BinaryWriteParameters.ModKeyOption.CorrectToPath,
-                RecordCount = BinaryWriteParameters.RecordCountOption.Iterate,
-                LightMasterLimit = BinaryWriteParameters.LightMasterLimitOption.ExceptionOnOverflow,
-                MastersListContent = BinaryWriteParameters.MastersListContentOption.Iterate,
-                FormIDUniqueness = BinaryWriteParameters.FormIDUniquenessOption.Iterate,
-                NextFormID = BinaryWriteParameters.NextFormIDOption.Iterate
+                MasterFlag = MasterFlagOption.ChangeToMatchModKey,
+                ModKey = ModKeyOption.CorrectToPath,
+                RecordCount = RecordCountOption.Iterate,
+                LightMasterLimit = LightMasterLimitOption.ExceptionOnOverflow,
+                MastersListContent = MastersListContentOption.Iterate,
+                FormIDUniqueness = FormIDUniquenessOption.Iterate,
+                NextFormID = NextFormIDOption.Iterate
         };
     }
 }

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Mutagen.Bethesda;
+using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 using MutagenMerger.Lib;
 using Xunit;
