@@ -40,7 +40,7 @@ namespace MutagenMerger.CLI
                     .Select(x => ModKey.FromNameAndExtension(x))
                     .ToList();
 
-            Directory.Delete(options.Output, true);
+            if(Directory.Exists(options.Output)) Directory.Delete(options.Output, true);
             var sw = new Stopwatch();
             sw.Start();
 

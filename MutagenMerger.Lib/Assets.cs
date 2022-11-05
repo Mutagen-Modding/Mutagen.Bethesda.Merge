@@ -77,19 +77,6 @@ namespace MutagenMerger.Lib
                 }
                 Console.WriteLine();
 
-                // // //   // copy loose File/FormID specific assets
-                // CopyActorAssets(dataPath, paths[0], mod);
-                // CopyActorAssets(dataPath, paths[1], mod);
-                // CopyVoiceAssets(dataPath, paths[2], mod);
-                // CopyTranslations(dataPath, paths[3], mod);
-
-
-                // // //   // copy archived File/FormID specific assets
-                // CopyActorAssets(temp, paths[0], mod);
-                // CopyActorAssets(temp, paths[1], mod);
-                // CopyVoiceAssets(temp, paths[2], mod);
-                // CopyTranslations(temp, paths[3], mod);
-
             }
 
             var matches = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(temp)));
@@ -97,7 +84,7 @@ namespace MutagenMerger.Lib
             matches.Files.ForEach(x =>
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(_outputDir, x.Path)) ?? "");
-                Console.WriteLine("          Copying extracted asset \"" + x.Path + "\"");
+                Console.WriteLine("            Copying extracted asset \"" + x.Path + "\"");
                 File.Copy(Path.Combine(temp, x.Path), Path.Combine(_outputDir, x.Path));
             });
 
@@ -139,7 +126,7 @@ namespace MutagenMerger.Lib
 
         private static List<UInt32> GetSeqQuests(TMod merge)
         {
-            var masterColl = new MasterReferenceCollection(merge.ModKey, merge.MasterReferences);
+            var masterColl = MasterReferenceCollection.FromPath(Path.Combine(_outputDir,_mergeName),_game);
 
             IGroup quests = _game switch
             {
@@ -147,36 +134,17 @@ namespace MutagenMerger.Lib
                 GameRelease.Fallout4 => merge.GetTopLevelGroup<Fallout4.Quest>(),
                 _ => merge.GetTopLevelGroup<Skyrim.Quest>(),
             };
-            // quests.Records.ForEach(x => Console.WriteLine(x.EditorID));
-            // quests.Records.ForEach(x =>
-            // {
-            //     Console.WriteLine(_game switch
-            //     {
-            //         GameRelease.Oblivion => String.Join(", ", Enum.GetValues<Oblivion.Quest.Flag>().Where(e => ((Oblivion.Quest)x).Data!.Flags.HasFlag(e))),
-            //         GameRelease.Fallout4 => String.Join(", ", Enum.GetValues<Fallout4.Quest.Flag>().Where(e => ((Fallout4.Quest)x).Data!.Flags.HasFlag(e))),
-            //         _ => String.Join(", ", Enum.GetValues<Skyrim.Quest.Flag>().Where(e => ((Skyrim.Quest)x).Flags.HasFlag(e))),
-            //     });
-            // });
-
-            // quests.Records.Where(x => ((Skyrim.Quest)x).Flags.HasFlag(Skyrim.Quest.Flag.StartGameEnabled))
-            //               .Select(x => x.FormKey.IDString())
-            //               .ForEach(Console.WriteLine);
-
-            var masterCount = merge.MasterReferences.Count;
+            
             List<UInt32> formIds = new List<UInt32>();
 
             if (quests.Count == 0) return formIds;
 
-            
-
             foreach (var quest in quests.Records)
             {
-                var fid = (uint)(masterColl.GetFormID(quest.FormKey).ID + 0x01000000 * masterCount);
+                var fid = masterColl.GetFormID(quest.FormKey).Raw;
                 formIds.Add(fid);
             }
-            
-                merge.MasterReferences.Select(x => x.Master.FileName.String).ForEach(x=> Console.WriteLine(x));
-                masterColl.Masters.Select(x => x.Master.FileName.String).ForEach(x=> Console.WriteLine(x));
+
             return formIds;
         }
 

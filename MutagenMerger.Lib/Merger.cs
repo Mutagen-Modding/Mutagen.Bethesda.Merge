@@ -57,8 +57,6 @@ namespace MutagenMerger.Lib
         public void Dispose()
         {
             _loadOrder.Dispose();
-            Directory.CreateDirectory(Path.GetDirectoryName(_outputPath) ?? "");
-            _outputMod.WriteToBinary(Path.GetRelativePath(".",_outputPath), Utils.SafeBinaryWriteParameters);
         }
     }
 }
