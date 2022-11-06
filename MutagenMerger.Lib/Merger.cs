@@ -40,17 +40,30 @@ namespace MutagenMerger.Lib
             _plugins = plugins;
             _modsToMerge = modsToMerge;
         }
+        
         public void Merge()
         {
-            var mods = _loadOrder.PriorityOrder.Resolve();
+            var mods = _loadOrder.PriorityOrder.Resolve().ToArray();
             var mergingMods = mods.Where(x => _modsToMerge.Contains(x.ModKey)).ToArray();
 
             Console.WriteLine("Merging " + String.Join(", ",mergingMods.Select(x => x.ModKey.FileName.String)) + " into " + Path.GetFileName(_outputPath));
             Console.WriteLine();
 
-            mergingMods.MergeMods<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
-                _outputMod, _game, _dataFolderPath, _outputPath,
-                out var mapping);
+            
+            var modsToMerge = mods.Select(x => x.ModKey).ToHashSet();
+
+            var linkCache = mods.ToImmutableLinkCache<TMod, TModGetter>();
+
+            var state = new MergeState<TMod, TModGetter>(
+                _game,
+                mods,
+                modsToMerge,
+                _outputMod,
+                OutputPath: _outputPath,
+                DataPath: _dataFolderPath,
+                LinkCache: linkCache);
+            
+            Merge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.DoMerge(state);
         }
 
         public void Dispose()

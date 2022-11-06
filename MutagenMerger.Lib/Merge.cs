@@ -3,49 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Mutagen.Bethesda;
-using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Records;
 using Mutagen.Bethesda.Plugins.Cache;
 using Loqui;
 using Mutagen.Bethesda.Skyrim;
-using Noggog;
 
 namespace MutagenMerger.Lib
 {
-    public static class MergeExtensions
-    {
-        public static void MergeMods<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
-            this IReadOnlyList<TModGetter> mods,
-            TMod outputMod,
-            GameRelease game,
-            DirectoryPath dataPath,
-            FilePath outputPath,
-            out Dictionary<FormKey, FormKey> mapping)
-            where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>,
-            IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
-            where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
-            where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
-            where TMajorRecordGetter : class, IMajorRecordGetter
-        {
-            var modsToMerge = mods.Select(x => x.ModKey).ToHashSet();
-
-            var linkCache = mods.ToImmutableLinkCache<TMod, TModGetter>();
-
-            mapping = new Dictionary<FormKey, FormKey>();
-
-            var state = new MergeState<TMod, TModGetter>(
-                game,
-                mods,
-                modsToMerge,
-                outputMod,
-                OutputPath: outputPath,
-                DataPath: dataPath,
-                LinkCache: linkCache);
-            
-            Merge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.DoMerge(state);
-        }
-    }
-
     internal static class Merge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
         where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>,
         IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
