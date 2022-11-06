@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Cache.Internals.Implementations;
 using Mutagen.Bethesda.Plugins.Records;
 using Noggog;
@@ -19,4 +20,9 @@ public record MergeState<TMod, TModGetter>(
     where TModGetter : class, IContextGetterMod<TMod, TModGetter>
 {
     public Dictionary<FormKey, FormKey> Mapping { get; } = new();
+    
+    public bool IsOverride(IModContext<IMajorRecordGetter> rec)
+    {
+        return !(ModsToMerge.Contains(rec.Record.FormKey.ModKey) || rec.ModKey == rec.Record.FormKey.ModKey);
+    }
 }

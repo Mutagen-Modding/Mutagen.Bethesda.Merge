@@ -21,7 +21,7 @@ namespace MutagenMerger.Lib
         static SkyrimSpecifications skyrimSpecifications = new SkyrimSpecifications();
         // static Fallout4Specifications fallout4Specifications = new Fallout4Specifications();
         // static OblivionSpecifications oblivionSpecifications = new OblivionSpecifications();
-        static IReadOnlyCollection<ObjectKey> blacklist = SkyrimSpecifications.BlacklistedCopyTypes;//.Join();
+        static IReadOnlyCollection<ObjectKey> blacklist = new SkyrimSpecifications().BlacklistedCopyTypes;//.Join();
 
         public static void MergeMods<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
             this IReadOnlyList<TModGetter> mods,
