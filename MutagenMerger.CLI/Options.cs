@@ -1,12 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using CommandLine;
-using JetBrains.Annotations;
 using Mutagen.Bethesda;
 
 namespace MutagenMerger.CLI
 {
-    [PublicAPI]
     public class Options
     {
         

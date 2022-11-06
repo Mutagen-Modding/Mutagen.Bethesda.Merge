@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using JetBrains.Annotations;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Order;
@@ -10,7 +9,6 @@ using Mutagen.Bethesda.Plugins.Records;
 
 namespace MutagenMerger.Lib
 {
-    [PublicAPI]
     public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> : IDisposable
         where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
         where TMod : class, TModGetter, IMod, IContextMod<TMod, TModGetter>
