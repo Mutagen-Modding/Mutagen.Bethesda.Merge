@@ -44,33 +44,23 @@ namespace MutagenMerger.CLI
             var sw = new Stopwatch();
             sw.Start();
 
+            IMerger merger;
             switch (options.Game)
             {
                 case GameRelease.Oblivion:
-                    using (var oMerger = new Merger<IOblivionModGetter, IOblivionMod, IOblivionMajorRecord, IOblivionMajorRecordGetter>(options.DataFolder, plugins, modsToMerge,
-                    ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game))
-                    {
-                        oMerger.Merge();
-                    }
+                    merger = new Merger<IOblivionModGetter, IOblivionMod, IOblivionMajorRecord, IOblivionMajorRecordGetter>();
                     break;
                 case GameRelease.Fallout4:
-                    using (var fMerger = new Merger<IFallout4ModGetter, IFallout4Mod, IFallout4MajorRecord, IFallout4MajorRecordGetter>(options.DataFolder, plugins, modsToMerge,
-                    ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game))
-                    {
-                        fMerger.Merge();
-
-                    }
+                    merger = new Merger<IFallout4ModGetter, IFallout4Mod, IFallout4MajorRecord, IFallout4MajorRecordGetter>();
                     break;
                 default:
-                    using (var merger = new Merger<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(options.DataFolder, plugins, modsToMerge,
-                    ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game))
-                    {
-                        merger.Merge();
-
-                    }
+                    merger = new Merger<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>();
                     break;
             }
 
+            merger.Merge(options.DataFolder, plugins, modsToMerge,
+                ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game);
+            
             Console.WriteLine($"Merged {modsToMerge.Count} plugins in {sw.ElapsedMilliseconds}ms");
             sw.Stop();
         }

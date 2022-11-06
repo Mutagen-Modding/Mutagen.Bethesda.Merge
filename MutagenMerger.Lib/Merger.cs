@@ -6,67 +6,64 @@ using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Order;
 using Mutagen.Bethesda.Plugins.Records;
+using Noggog;
 
 namespace MutagenMerger.Lib
 {
-    public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> : IDisposable
-        where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
+    public interface IMerger
+    {
+        void Merge(
+            DirectoryPath dataFolderPath,
+            List<ModKey> plugins,
+            IEnumerable<ModKey> modsToMerge, 
+            ModKey outputKey,
+            DirectoryPath outputFolder,
+            GameRelease game);
+    }
+
+    public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> : IMerger
+        where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, TModGetter, IMod, IContextMod<TMod, TModGetter>
         where TMajorRecord : class, TMajorRecordGetter, IMajorRecord
         where TMajorRecordGetter : class, IMajorRecordGetter
     {
-        private readonly ILoadOrder<IModListing<TModGetter>> _loadOrder;
-        private readonly TMod _outputMod;
-        private readonly string _outputPath;
-        private readonly IEnumerable<ModKey> _plugins;
-        private readonly List<ModKey> _modsToMerge;
-        private readonly GameRelease _game;
-        private readonly string _dataFolderPath;
-
-        public Merger(string dataFolderPath, List<ModKey> plugins, List<ModKey> modsToMerge, ModKey outputKey, string outputFolder, GameRelease game)
+        public void Merge(
+            DirectoryPath dataFolderPath,
+            List<ModKey> plugins,
+            IEnumerable<ModKey> modsToMerge, 
+            ModKey outputKey,
+            DirectoryPath outputFolder,
+            GameRelease game)
         {
-            _game = game;
-            _loadOrder = LoadOrder.Import(
+            using var loadOrder = LoadOrder.Import(
                 dataFolderPath,
                 plugins,
-                path => ModInstantiator<TModGetter>.Importer(path, _game));
-
-            _outputMod = ModInstantiator.Activator(outputKey, _game) as TMod ?? throw new ArgumentNullException(nameof(_outputMod));
-
-            _outputPath = Path.Combine(outputFolder, outputKey.FileName);
-            _dataFolderPath = dataFolderPath;
-            _plugins = plugins;
-            _modsToMerge = modsToMerge;
-        }
-        
-        public void Merge()
-        {
-            var mods = _loadOrder.PriorityOrder.Resolve().ToArray();
-            var mergingMods = mods.Where(x => _modsToMerge.Contains(x.ModKey)).ToArray();
-
-            Console.WriteLine("Merging " + String.Join(", ",mergingMods.Select(x => x.ModKey.FileName.String)) + " into " + Path.GetFileName(_outputPath));
-            Console.WriteLine();
-
+                path => ModInstantiator<TModGetter>.Importer(path, game));
             
-            var modsToMerge = mods.Select(x => x.ModKey).ToHashSet();
+            var outputMod = ModInstantiator.Activator(outputKey, game) as TMod ?? throw new Exception("Could not instantiate mod");
+
+            var mods = loadOrder.PriorityOrder.Resolve().ToArray();
+            var mergingMods = mods.Where(x => modsToMerge.Contains(x.ModKey)).ToArray();
+
+            var outputFile = Path.Combine(outputFolder, outputKey.FileName);
+
+            Console.WriteLine("Merging " + String.Join(", ",mergingMods.Select(x => x.ModKey.FileName.String)) + " into " + Path.GetFileName(outputFile));
+            Console.WriteLine();
+            
+            var modsToMergeSet = modsToMerge.ToHashSet();
 
             var linkCache = mods.ToImmutableLinkCache<TMod, TModGetter>();
 
             var state = new MergeState<TMod, TModGetter>(
-                _game,
+                game,
                 mods,
-                modsToMerge,
-                _outputMod,
-                OutputPath: _outputPath,
-                DataPath: _dataFolderPath,
+                modsToMergeSet,
+                outputMod,
+                OutputPath: outputFile,
+                DataPath: dataFolderPath,
                 LinkCache: linkCache);
             
             Merge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.DoMerge(state);
-        }
-
-        public void Dispose()
-        {
-            _loadOrder.Dispose();
         }
     }
 }
