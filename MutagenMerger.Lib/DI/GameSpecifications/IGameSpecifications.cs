@@ -3,7 +3,7 @@ using Loqui;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Records;
 
-namespace MutagenMerger.Lib.GameSpecifications;
+namespace MutagenMerger.Lib.DI.GameSpecifications;
 
 public interface IGameSpecifications<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
     where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
@@ -11,7 +11,7 @@ public interface IGameSpecifications<TModGetter, TMod, TMajorRecord, TMajorRecor
     where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
     where TMajorRecordGetter : class, IMajorRecordGetter
 {
-    public IReadOnlyCollection<ObjectKey>? BlacklistedCopyTypes { get; }
+    public IReadOnlyCollection<ObjectKey> BlacklistedCopyTypes { get; }
 
     public void HandleCopyFor(
         MergeState<TMod, TModGetter> state,

@@ -8,7 +8,7 @@ using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Order;
 using Mutagen.Bethesda.Plugins.Records;
-using Mutagen.Bethesda.Skyrim;
+using MutagenMerger.Lib.DI.GameSpecifications;
 using Noggog;
 
 namespace MutagenMerger.Lib.DI
@@ -30,11 +30,12 @@ namespace MutagenMerger.Lib.DI
         where TMajorRecord : class, TMajorRecordGetter, IMajorRecord
         where TMajorRecordGetter : class, IMajorRecordGetter
     {
-        static SkyrimSpecifications skyrimSpecifications = new SkyrimSpecifications();
+        private readonly IGameSpecifications<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> _gameSpecs;
 
-        // static Fallout4Specifications fallout4Specifications = new Fallout4Specifications();
-        // static OblivionSpecifications oblivionSpecifications = new OblivionSpecifications();
-        static IReadOnlyCollection<ObjectKey> blacklist = new SkyrimSpecifications().BlacklistedCopyTypes; //.Join();
+        public Merger(IGameSpecifications<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> gameSpecs)
+        {
+            _gameSpecs = gameSpecs;
+        }
         
         public void Merge(
             DirectoryPath dataFolderPath,
@@ -102,9 +103,9 @@ namespace MutagenMerger.Lib.DI
                          .WinningOverrideContexts<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(mergeState
                              .LinkCache))
             {
-                if (blacklist.Contains(rec.Record.Registration.ObjectKey))
+                if (_gameSpecs.BlacklistedCopyTypes.Contains(rec.Record.Registration.ObjectKey))
                 {
-                    HandleDeepCopy(mergeState, rec);
+                    _gameSpecs.HandleCopyFor(mergeState, rec);
                 }
                 else if (rec.ModKey == rec.Record.FormKey.ModKey)
                 {
@@ -117,31 +118,6 @@ namespace MutagenMerger.Lib.DI
             }
 
             Console.WriteLine();
-        }
-
-        private void HandleDeepCopy(
-            MergeState<TMod, TModGetter> mergeState,
-            IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> rec)
-        {
-            switch (mergeState.Release)
-            {
-                case GameRelease.Fallout4:
-                    break;
-                case GameRelease.Oblivion:
-                    break;
-                default:
-                    skyrimSpecifications.HandleCopyFor(
-                        new MergeState<ISkyrimMod, ISkyrimModGetter>(
-                            mergeState.Release,
-                            mergeState.Mods.Cast<ISkyrimModGetter>().ToArray(),
-                            mergeState.ModsToMerge,
-                            (ISkyrimMod)mergeState.OutgoingMod,
-                            mergeState.OutputPath,
-                            mergeState.DataPath,
-                            null! /* for now */),
-                        (IModContext<ISkyrimMod, ISkyrimModGetter, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>)rec);
-                    break;
-            }
         }
 
         private void DuplicateAsNewRecord(

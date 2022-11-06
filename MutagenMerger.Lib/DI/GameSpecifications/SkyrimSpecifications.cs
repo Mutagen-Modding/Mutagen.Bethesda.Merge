@@ -1,24 +1,23 @@
+using System;
 using System.Collections.Generic;
 using Loqui;
-using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Skyrim;
 using Skyrim = Mutagen.Bethesda.Skyrim;
-using System;
-using MutagenMerger.Lib;
-using MutagenMerger.Lib.GameSpecifications;
+
+namespace MutagenMerger.Lib.DI.GameSpecifications;
 
 public class SkyrimSpecifications : IGameSpecifications<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>
 {
     public IReadOnlyCollection<ObjectKey> BlacklistedCopyTypes { get; } = new HashSet<ObjectKey> {
-                                Skyrim.DialogTopic.StaticRegistration.ObjectKey,
-                                Skyrim.DialogResponse.StaticRegistration.ObjectKey,
-                                Skyrim.DialogResponses.StaticRegistration.ObjectKey,
-                                Skyrim.Worldspace.StaticRegistration.ObjectKey,
-                                Skyrim.Cell.StaticRegistration.ObjectKey,
-                                Skyrim.NavigationMesh.StaticRegistration.ObjectKey,
-                                Skyrim.PlacedNpc.StaticRegistration.ObjectKey,
-                                Skyrim.PlacedObject.StaticRegistration.ObjectKey,
+        Skyrim.DialogTopic.StaticRegistration.ObjectKey,
+        Skyrim.DialogResponse.StaticRegistration.ObjectKey,
+        Skyrim.DialogResponses.StaticRegistration.ObjectKey,
+        Skyrim.Worldspace.StaticRegistration.ObjectKey,
+        Skyrim.Cell.StaticRegistration.ObjectKey,
+        Skyrim.NavigationMesh.StaticRegistration.ObjectKey,
+        Skyrim.PlacedNpc.StaticRegistration.ObjectKey,
+        Skyrim.PlacedObject.StaticRegistration.ObjectKey,
     };
 
     public void HandleCopyFor(
