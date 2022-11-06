@@ -15,5 +15,5 @@ public interface IGameSpecifications<TModGetter, TMod, TMajorRecord, TMajorRecor
 
     public void HandleCopyFor(
         MergeState<TMod, TModGetter> state,
-        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> rec);
+        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context);
 }

@@ -21,8 +21,8 @@ public record MergeState<TMod, TModGetter>(
 {
     public Dictionary<FormKey, FormKey> Mapping { get; } = new();
     
-    public bool IsOverride(IModContext<IMajorRecordGetter> rec)
+    public bool IsOverride(FormKey rec, ModKey currentMod)
     {
-        return !(ModsToMerge.Contains(rec.Record.FormKey.ModKey) || rec.ModKey == rec.Record.FormKey.ModKey);
+        return !(ModsToMerge.Contains(rec.ModKey) || currentMod == rec.ModKey);
     }
 }
