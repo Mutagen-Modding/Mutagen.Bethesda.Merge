@@ -44,7 +44,7 @@ namespace MutagenMerger.Lib
         public void Merge()
         {
             var mods = _loadOrder.PriorityOrder.Resolve();
-            var mergingMods = mods.Where(x => _modsToMerge.Contains(x.ModKey));
+            var mergingMods = mods.Where(x => _modsToMerge.Contains(x.ModKey)).ToArray();
 
             Console.WriteLine("Merging " + String.Join(", ",mergingMods.Select(x => x.ModKey.FileName.String)) + " into " + Path.GetFileName(_outputPath));
             Console.WriteLine();

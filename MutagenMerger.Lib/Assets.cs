@@ -23,12 +23,9 @@ namespace MutagenMerger.Lib
             where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
             where TMajorRecordGetter : class, IMajorRecordGetter
     {
-
-        static Dictionary<FormKey, FormKey>? _mapping;
+        static MergeState<TMod, TModGetter> _mergeState = null!;
         static string _outputDir = "";
         static string _mergeName = "";
-        static GameRelease _game;
-        private static HashSet<ModKey>? _modsToMerge;
         static string temp = GetTemporaryDirectory();
         public static List<string> Rules
         {
@@ -38,7 +35,7 @@ namespace MutagenMerger.Lib
                     "interface/translations/*.txt", "TES5Edit Backups/**/*",
                     "fomod/**/*", "screenshot?(s)/**/*", "scripts/source/*.psc"};
 
-                _modsToMerge!.ForEach(x =>
+                _mergeState.ModsToMerge.ForEach(x =>
                 {
                     rules.Add($"**/{x.Name.ToLower()}.seq");
                     rules.Add($"**/{x.Name.ToLower()}.ini");
@@ -52,22 +49,21 @@ namespace MutagenMerger.Lib
             }
         }
 
-        public static void Handle(TMod outputMod, Dictionary<FormKey, FormKey> mapping, TModGetter[] modsCached, HashSet<ModKey> modsToMerge, ImmutableLoadOrderLinkCache<TMod, TModGetter> linkCache, GameRelease game, string dataPath, string _outputPath)
+        public static void Handle(
+            MergeState<TMod, TModGetter> mergeState)
         {
-            _mapping = mapping;
-            _outputDir = Path.GetDirectoryName(_outputPath) ?? "";
-            _mergeName = Path.GetFileName(_outputPath);
-            _game = game;
-            _modsToMerge = modsToMerge;
+            _mergeState = mergeState;
+            _outputDir = Path.GetDirectoryName(mergeState.OutputPath) ?? "";
+            _mergeName = Path.GetFileName(mergeState.OutputPath);
             var matcher = new Matcher();
             matcher.AddIncludePatterns(new string[] { "**/*" });
             matcher.AddExcludePatterns(Rules);
 
-            foreach (var mod in modsToMerge)
+            foreach (var mod in _mergeState.ModsToMerge)
             {
 
-                var bsaPattern = mod.FileName.NameWithoutExtension + "*." + (game == GameRelease.Fallout4 ? "b2a" : "bsa");
-                string[] bsaFiles = Directory.GetFiles(dataPath, bsaPattern);
+                var bsaPattern = mod.FileName.NameWithoutExtension + "*." + (_mergeState.Release == GameRelease.Fallout4 ? "b2a" : "bsa");
+                string[] bsaFiles = Directory.GetFiles(_mergeState.DataPath, bsaPattern);
 
                 // bsaFiles.ForEach(Console.WriteLine);
 
@@ -88,13 +84,13 @@ namespace MutagenMerger.Lib
                 File.Copy(Path.Combine(temp, x.Path), Path.Combine(_outputDir, x.Path));
             });
 
-            foreach (var mod in modsToMerge)
+            foreach (var mod in _mergeState.ModsToMerge)
             {
-                CopyAssets(dataPath, mod);
+                CopyAssets(_mergeState.DataPath, mod);
                 CopyAssets(temp, mod);
             }
 
-            BuildSeqFile(dataPath, temp, outputMod);
+            BuildSeqFile(_mergeState.DataPath, temp, _mergeState.OutgoingMod);
         }
 
         private static void BuildSeqFile(string dataPath, string temp, TMod outputMod)
@@ -126,9 +122,9 @@ namespace MutagenMerger.Lib
 
         private static List<UInt32> GetSeqQuests(TMod merge)
         {
-            var masterColl = MasterReferenceCollection.FromPath(Path.Combine(_outputDir,_mergeName),_game);
+            var masterColl = MasterReferenceCollection.FromPath(Path.Combine(_outputDir,_mergeName), _mergeState.Release);
 
-            IGroup quests = _game switch
+            IGroup quests = _mergeState.Release switch
             {
                 GameRelease.Oblivion => merge.GetTopLevelGroup<Oblivion.Quest>(),
                 GameRelease.Fallout4 => merge.GetTopLevelGroup<Fallout4.Quest>(),
@@ -161,7 +157,7 @@ namespace MutagenMerger.Lib
         {
             Console.WriteLine();
 
-            var reader = Archive.CreateReader(_game, bsa);
+            var reader = Archive.CreateReader(_mergeState.Release, bsa);
             var files = reader.Files.ToArray();
             for (int i = 0; i < files.Count(); i++)
             {
@@ -217,7 +213,7 @@ namespace MutagenMerger.Lib
             Console.WriteLine("          Copying assets to directory \"" + Path.Combine(path, _mergeName) + "\"");
 
 
-            _mapping!.Where(x => x.Key.ModKey == mod).ForEach(x =>
+            _mergeState.Mapping.Where(x => x.Key.ModKey == mod).ForEach(x =>
             {
                 var srcId = x.Key.ID;
                 var srcIdString = x.Key.IDString().ToLower();
@@ -226,9 +222,9 @@ namespace MutagenMerger.Lib
                 "*" + srcIdString + "*",
                 new EnumerationOptions() { RecurseSubdirectories = true, MatchCasing = MatchCasing.CaseInsensitive }))
                 {
-                    if (_mapping!.Select(x => x.Key.ModKey).Contains(mod) && _mapping!.Select(x => x.Key.ID).Contains(srcId))
+                    if (_mergeState.Mapping.Select(x => x.Key.ModKey).Contains(mod) && _mergeState.Mapping.Select(x => x.Key.ID).Contains(srcId))
                     {
-                        var newId = "00" + _mapping![new FormKey(mod, srcId)].IDString().ToLower();
+                        var newId = "00" + _mergeState.Mapping[new FormKey(mod, srcId)].IDString().ToLower();
                         var dstFile = file.Replace(srcIdString, newId).Replace(srcPath, dstPath);
                         Directory.CreateDirectory(Path.GetDirectoryName(dstFile) ?? "");
                         Console.WriteLine("            Asset renumbered from " + srcIdString + " to " + newId);

@@ -12,6 +12,7 @@ using Oblivion = Mutagen.Bethesda.Oblivion;
 using Mutagen.Bethesda.Plugins.Cache;
 using Loqui;
 using Mutagen.Bethesda.Skyrim;
+using Noggog;
 
 namespace MutagenMerger.Lib
 {
@@ -23,40 +24,47 @@ namespace MutagenMerger.Lib
         static IReadOnlyCollection<ObjectKey> blacklist = SkyrimSpecifications.BlacklistedCopyTypes;//.Join();
 
         public static void MergeMods<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
-            this IEnumerable<TModGetter> mods,
+            this IReadOnlyList<TModGetter> mods,
             TMod outputMod,
             GameRelease game,
-            string dataPath,
-            string outputFolder,
+            DirectoryPath dataPath,
+            FilePath outputPath,
             out Dictionary<FormKey, FormKey> mapping)
             where TMod : class, TModGetter, IMod, IContextMod<TMod, TModGetter>
             where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
             where TMajorRecord : class, TMajorRecordGetter, IMajorRecord
             where TMajorRecordGetter : class, IMajorRecordGetter
         {
-            // Just in case user gave us a lazy IEnumerable
-            var modsCached = mods.ToArray();
+            var modsToMerge = mods.Select(x => x.ModKey).ToHashSet();
 
-            var modsToMerge = modsCached.Select(x => x.ModKey).ToHashSet();
-
-            var linkCache = modsCached.ToImmutableLinkCache<TMod, TModGetter>();
+            var linkCache = mods.ToImmutableLinkCache<TMod, TModGetter>();
 
             mapping = new Dictionary<FormKey, FormKey>();
 
-            CopyRecords<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(outputMod, mapping, modsCached, modsToMerge, linkCache, game);
+            var state = new MergeState<TMod, TModGetter>(
+                game,
+                mods,
+                modsToMerge,
+                outputMod,
+                OutputPath: outputPath,
+                DataPath: dataPath,
+                LinkCache: linkCache);
+
+            CopyRecords<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(state);
 
             outputMod.RemapLinks(mapping);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(outputFolder) ?? "");
-            outputMod.WriteToBinary(Path.Combine(outputFolder), Utils.SafeBinaryWriteParameters);
+            Directory.CreateDirectory(outputPath.Directory ?? "");
+            outputMod.WriteToBinary(outputPath, Utils.SafeBinaryWriteParameters);
 
-            HandleAssets<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(outputMod, mapping, modsCached, modsToMerge, linkCache, game, dataPath, outputFolder);
+            HandleAssets<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(state);
 
-            HandleScripts<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(outputMod, mapping, modsCached, modsToMerge, linkCache, game, dataPath, outputFolder);
+            HandleScripts<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(state);
 
         }
 
-        private static void HandleScripts<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(TMod outputMod, Dictionary<FormKey, FormKey> mapping, TModGetter[] modsCached, HashSet<ModKey> modsToMerge, ImmutableLoadOrderLinkCache<TMod, TModGetter> linkCache, GameRelease game, string dataPath, string outputFolder)
+        private static void HandleScripts<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
+            MergeState<TMod, TModGetter> mergeState)
             where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
             where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
             where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
@@ -65,74 +73,90 @@ namespace MutagenMerger.Lib
             // Console.WriteLine("HandleScript");
         }
 
-        private static void HandleAssets<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(TMod outputMod, Dictionary<FormKey, FormKey> mapping, TModGetter[] modsCached, HashSet<ModKey> modsToMerge, ImmutableLoadOrderLinkCache<TMod, TModGetter> linkCache, GameRelease game, string dataPath, string outputFolder)
+        private static void HandleAssets<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>( MergeState<TMod, TModGetter> mergeState)
             where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
             where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
             where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
             where TMajorRecordGetter : class, IMajorRecordGetter
         {
-            AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.Handle(outputMod, mapping, modsCached, modsToMerge, linkCache, game, dataPath, outputFolder);
+            AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.Handle(mergeState);
         }
 
-        private static void CopyRecords<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(TMod outputMod, Dictionary<FormKey, FormKey> mapping, TModGetter[] modsCached, HashSet<ModKey> modsToMerge, ImmutableLoadOrderLinkCache<TMod, TModGetter> linkCache, GameRelease game)
+        private static void CopyRecords<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
+            MergeState<TMod, TModGetter> mergeState)
             where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
             where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
             where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
             where TMajorRecordGetter : class, IMajorRecordGetter
         {
-            foreach (var rec in modsCached
-                            .WinningOverrideContexts<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(linkCache))
+            foreach (var rec in mergeState.Mods
+                            .WinningOverrideContexts<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(mergeState.LinkCache))
             {
                 if (blacklist.Contains(rec.Record.Registration.ObjectKey))
                 {
-                    HandleDeepCopy(outputMod, mapping, modsToMerge, rec, game);
+                    HandleDeepCopy(mergeState, rec);
                 }
                 else if (rec.ModKey == rec.Record.FormKey.ModKey)
                 {
-                    DuplicateAsNewRecord(outputMod, mapping, rec);
+                    DuplicateAsNewRecord(mergeState, rec);
                 }
                 else
                 {
-                    CopyAsOverride(outputMod, mapping, modsToMerge, rec);
+                    CopyAsOverride(mergeState, rec);
                 }
             }
             Console.WriteLine();
         }
 
-        private static void HandleDeepCopy<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(TMod outputMod, Dictionary<FormKey, FormKey> mapping, HashSet<ModKey> modsToMerge, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> rec, GameRelease game)
+        private static void HandleDeepCopy<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
+            MergeState<TMod, TModGetter> mergeState,
+            IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> rec)
             where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
             where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
             where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
             where TMajorRecordGetter : class, IMajorRecordGetter
         {
-            switch (game)
+            switch (mergeState.Release)
             {
                 case GameRelease.Fallout4:
                     break;
                 case GameRelease.Oblivion:
                     break;
                 default:
-                    skyrimSpecifications.HandleCopyFor((ISkyrimMod)outputMod, mapping, modsToMerge, (IModContext<ISkyrimMod, ISkyrimModGetter, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>)rec);
+                    skyrimSpecifications.HandleCopyFor(
+                        new MergeState<ISkyrimMod, ISkyrimModGetter>(
+                            mergeState.Release,
+                            mergeState.Mods.Cast<ISkyrimModGetter>().ToArray(),
+                            mergeState.ModsToMerge,
+                            (ISkyrimMod)mergeState.OutgoingMod,
+                            mergeState.OutputPath,
+                            mergeState.DataPath,
+                            null! /* for now */),
+                        (IModContext<ISkyrimMod, ISkyrimModGetter, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>)rec);
                     break;
             }
 
         }
 
-        private static void DuplicateAsNewRecord<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(TMod outputMod, Dictionary<FormKey, FormKey> mapping, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> rec)
+        private static void DuplicateAsNewRecord<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
+            MergeState<TMod, TModGetter> mergeState,
+            IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> rec)
             where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
             where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
             where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
             where TMajorRecordGetter : class, IMajorRecordGetter
         {
             //record is not an override so we can just duplicate it
-            var duplicated = rec.DuplicateIntoAsNewRecord(outputMod, rec.Record.EditorID);
+            var duplicated = rec.DuplicateIntoAsNewRecord(mergeState.OutgoingMod, rec.Record.EditorID);
 
 
-            Console.WriteLine("          Renumbering Record [" + rec.Record.FormKey.ModKey.Name + "] " + rec.Record.FormKey.IDString() + " to [" + outputMod.ModKey.Name + "] " + duplicated.FormKey.IDString());
-            mapping.Add(rec.Record.FormKey, duplicated.FormKey);
+            Console.WriteLine("          Renumbering Record [" + rec.Record.FormKey.ModKey.Name + "] " + rec.Record.FormKey.IDString() + " to [" + mergeState.OutgoingMod.ModKey.Name + "] " + duplicated.FormKey.IDString());
+            mergeState.Mapping.Add(rec.Record.FormKey, duplicated.FormKey);
         }
 
-        private static void CopyAsOverride<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(TMod outputMod, Dictionary<FormKey, FormKey> mapping, HashSet<ModKey> modsToMerge, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> rec)
+        private static void CopyAsOverride<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>(
+            MergeState<TMod, TModGetter> mergeState, 
+            IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> rec)
             where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
             where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
             where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
@@ -147,19 +171,19 @@ namespace MutagenMerger.Lib
              * and we also don't want "outdated" records (only overrides in that case).
              * This explanation probably still won't make sense but whatever.
              */
-            if (modsToMerge.Contains(rec.Record.FormKey.ModKey))
+            if (mergeState.ModsToMerge.Contains(rec.Record.FormKey.ModKey))
             {
-                if (mapping.ContainsKey(rec.Record.FormKey))
+                if (mergeState.Mapping.ContainsKey(rec.Record.FormKey))
                     throw new NotImplementedException();
 
-                var duplicate = rec.DuplicateIntoAsNewRecord(outputMod, rec.Record.EditorID);
-                Console.WriteLine("          Renumbering Record[" + rec.Record.FormKey.ModKey.Name + "] " + rec.Record.FormKey.IDString() + " to [" + outputMod.ModKey.Name + "] " + duplicate.FormKey.IDString());
-                mapping.Add(rec.Record.FormKey, duplicate.FormKey);
+                var duplicate = rec.DuplicateIntoAsNewRecord(mergeState.OutgoingMod, rec.Record.EditorID);
+                Console.WriteLine("          Renumbering Record[" + rec.Record.FormKey.ModKey.Name + "] " + rec.Record.FormKey.IDString() + " to [" + mergeState.OutgoingMod.ModKey.Name + "] " + duplicate.FormKey.IDString());
+                mergeState.Mapping.Add(rec.Record.FormKey, duplicate.FormKey);
             }
             else
             {
                 Console.WriteLine("          Copying Override Record[" + rec.Record.FormKey.ModKey.Name + "] " + rec.Record.FormKey.IDString());
-                rec.GetOrAddAsOverride(outputMod);
+                rec.GetOrAddAsOverride(mergeState.OutgoingMod);
             }
         }
 

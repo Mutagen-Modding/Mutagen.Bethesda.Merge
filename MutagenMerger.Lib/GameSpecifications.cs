@@ -9,6 +9,7 @@ using Skyrim = Mutagen.Bethesda.Skyrim;
 using Fallout4 = Mutagen.Bethesda.Fallout4;
 using Oblivion = Mutagen.Bethesda.Oblivion;
 using System;
+using MutagenMerger.Lib;
 
 public abstract class GameSpecifications<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
             where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
@@ -18,8 +19,8 @@ public abstract class GameSpecifications<TModGetter, TMod, TMajorRecord, TMajorR
 {
     public static IReadOnlyCollection<ObjectKey>? BlacklistedCopyTypes { get; }
 
-    // merger will call for blacklisted records, to be routed to custom copy snippets
-    public abstract void HandleCopyFor(TMod outputMod, Dictionary<FormKey, FormKey> mapping, HashSet<ModKey> modsToMerge, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> rec);
+    public abstract void HandleCopyFor(MergeState<TMod, TModGetter> mergeState,
+        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> rec);
 
     public static bool IsOverride(HashSet<ModKey> modsToMerge, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> rec)
     {
@@ -42,7 +43,9 @@ public class SkyrimSpecifications : GameSpecifications<ISkyrimModGetter, ISkyrim
                                 Skyrim.PlacedObject.StaticRegistration.ObjectKey,
     };
 
-    public override void HandleCopyFor(ISkyrimMod outputMod, Dictionary<FormKey, FormKey> mapping, HashSet<ModKey> modsToMerge, IModContext<ISkyrimMod, ISkyrimModGetter, ISkyrimMajorRecord, ISkyrimMajorRecordGetter> rec)
+    public override void HandleCopyFor(
+        MergeState<ISkyrimMod, ISkyrimModGetter> mergeState,
+        IModContext<ISkyrimMod, ISkyrimModGetter, ISkyrimMajorRecord, ISkyrimMajorRecordGetter> rec)
     {
 
         DialogTopic.TranslationMask dialogTopicMask = new Skyrim.DialogTopic.TranslationMask(defaultOn: true)
@@ -53,44 +56,37 @@ public class SkyrimSpecifications : GameSpecifications<ISkyrimModGetter, ISkyrim
         if (rec.Record.Registration.ObjectKey.Equals(DialogTopic.StaticRegistration.ObjectKey))
         {
             Skyrim.DialogTopic? newRecord;
-            if (!IsOverride(modsToMerge, rec))
+            if (!IsOverride(mergeState.ModsToMerge, rec))
             {
-                newRecord = rec.Record.Duplicate(outputMod.GetNextFormKey(), dialogTopicMask) as Skyrim.DialogTopic;
+                newRecord = rec.Record.Duplicate(mergeState.OutgoingMod.GetNextFormKey(), dialogTopicMask) as Skyrim.DialogTopic;
 
 
                 foreach (var branch in ((IDialogTopicGetter)rec.Record).Responses)
                 {
-                    var dupeBranch = branch.Duplicate(outputMod.GetNextFormKey());
-                    mapping.Add(branch.FormKey, dupeBranch.FormKey);
+                    var dupeBranch = branch.Duplicate(mergeState.OutgoingMod.GetNextFormKey());
+                    mergeState.Mapping.Add(branch.FormKey, dupeBranch.FormKey);
                     newRecord!.Responses.Add(dupeBranch);
                 }
 
-                outputMod.DialogTopics.Add(newRecord!);
-                mapping.Add(rec.Record.FormKey, newRecord!.FormKey);
+                mergeState.OutgoingMod.DialogTopics.Add(newRecord!);
+                mergeState.Mapping.Add(rec.Record.FormKey, newRecord!.FormKey);
                 Console.WriteLine("          Deep Copying [" + rec.Record.FormKey.ModKey.Name + "] " + rec.Record.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
-
             }
             else
             {
-                newRecord = rec.GetOrAddAsOverride(outputMod) as Skyrim.DialogTopic;
+                newRecord = rec.GetOrAddAsOverride(mergeState.OutgoingMod) as Skyrim.DialogTopic;
                 foreach (var branch in newRecord!.Responses)
                 {
                     newRecord.Remove(branch.FormKey);
                 }
                 foreach (var branch in ((IDialogTopicGetter)rec.Record).Responses)
                 {
-                    var dupeBranch = branch.Duplicate(outputMod.GetNextFormKey());
+                    var dupeBranch = branch.Duplicate(mergeState.OutgoingMod.GetNextFormKey());
                     newRecord!.Responses.Add(dupeBranch);
-                    mapping.Add(branch.FormKey, dupeBranch.FormKey);
+                    mergeState.Mapping.Add(branch.FormKey, dupeBranch.FormKey);
                 }
                 Console.WriteLine("          Copying Override Record[" + rec.Record.FormKey.ModKey.Name + "] " + rec.Record.FormKey.IDString());
-
             }
-
-
-
-
-
         }
     }
 }

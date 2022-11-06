@@ -13,7 +13,7 @@ namespace MutagenMerger.Tests
     {
         public MergerTests()
         {
-            WarmupSkyrim.Init();
+            Warmup.Init();
         }
         
         [Fact]
@@ -57,7 +57,7 @@ namespace MutagenMerger.Tests
             }
 
             const string outputFileName = "output.esp";
-            using (var merger = new Merger(testFolder, mods, mods, outputFileName))
+            using (var merger = new Merger(testFolder, mods, mods, outputFileName, testFolder, GameRelease.SkyrimSE))
             {
                 merger.Merge();
             }
@@ -98,7 +98,7 @@ namespace MutagenMerger.Tests
             if (File.Exists(outputPath))
                 File.Delete(outputPath);
             
-            using (var merger = new Merger(folder, mods, mods, outputMod))
+            using (var merger = new Merger(folder, mods, mods, outputMod, folder, GameRelease.SkyrimSE))
             {
                 merger.Merge();
             }
