@@ -11,7 +11,7 @@ using Mutagen.Bethesda.Plugins.Records;
 using Mutagen.Bethesda.Skyrim;
 using Noggog;
 
-namespace MutagenMerger.Lib
+namespace MutagenMerger.Lib.DI
 {
     public interface IMerger
     {

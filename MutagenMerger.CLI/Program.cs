@@ -3,13 +3,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
 using CommandLine;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Fallout4;
 using Mutagen.Bethesda.Oblivion;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
+using MutagenMerger.CLI.Container;
 using MutagenMerger.Lib;
+using MutagenMerger.Lib.DI;
 
 namespace MutagenMerger.CLI
 {
@@ -44,21 +47,27 @@ namespace MutagenMerger.CLI
             var sw = new Stopwatch();
             sw.Start();
 
-            IMerger merger;
-            switch (options.Game)
+            Type[] genericTypes;
+            switch (options.Game.ToCategory())
             {
-                case GameRelease.Oblivion:
-                    merger = new Merger<IOblivionModGetter, IOblivionMod, IOblivionMajorRecord, IOblivionMajorRecordGetter>();
+                case GameCategory.Oblivion:
+                    genericTypes = new Type[] { typeof(IOblivionModGetter), typeof(IOblivionMod), typeof(IOblivionMajorRecord), typeof(IOblivionMajorRecordGetter) };
                     break;
-                case GameRelease.Fallout4:
-                    merger = new Merger<IFallout4ModGetter, IFallout4Mod, IFallout4MajorRecord, IFallout4MajorRecordGetter>();
+                case GameCategory.Fallout4:
+                    genericTypes = new Type[] { typeof(IFallout4ModGetter), typeof(IFallout4Mod), typeof(IFallout4MajorRecord), typeof(IFallout4MajorRecordGetter) };
                     break;
+                case GameCategory.Skyrim:
                 default:
-                    merger = new Merger<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>();
+                    genericTypes = new Type[] { typeof(ISkyrimModGetter), typeof(ISkyrimMod), typeof(ISkyrimMajorRecord), typeof(ISkyrimMajorRecordGetter) };
                     break;
             }
+            
+            ContainerBuilder builder = new();
+            builder.RegisterModule<MainModule>();
+            var container = builder.Build();
+            var merger = container.Resolve(typeof(Merger<,,,>).MakeGenericType(genericTypes)) as IMerger;
 
-            merger.Merge(options.DataFolder, plugins, modsToMerge,
+            merger!.Merge(options.DataFolder, plugins, modsToMerge,
                 ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game);
             
             Console.WriteLine($"Merged {modsToMerge.Count} plugins in {sw.ElapsedMilliseconds}ms");
