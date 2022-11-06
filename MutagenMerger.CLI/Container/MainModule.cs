@@ -13,6 +13,7 @@ public class MainModule : Autofac.Module
     protected override void Load(ContainerBuilder builder)
     {
         builder.RegisterGeneric(typeof(Merger<,,,>)).AsSelf();
+        builder.RegisterGeneric(typeof(CopyRecordProcessor<,>)).AsSelf();
         builder.RegisterAssemblyTypes(typeof(SkyrimSpecifications).Assembly)
             .InNamespacesOf(typeof(IMerger))
             .AsImplementedInterfaces();
