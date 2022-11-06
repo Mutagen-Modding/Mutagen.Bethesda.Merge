@@ -4,26 +4,25 @@ using Loqui;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Skyrim;
-using Skyrim = Mutagen.Bethesda.Skyrim;
 
-namespace MutagenMerger.Lib.DI.GameSpecifications;
+namespace MutagenMerger.Lib.DI.GameSpecifications.Skyrim;
 
 public class SkyrimSpecifications : IGameSpecifications<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>
 {
-    private static readonly DialogTopic.TranslationMask DialogTopicMask = new Skyrim.DialogTopic.TranslationMask(defaultOn: true)
+    private static readonly DialogTopic.TranslationMask DialogTopicMask = new Mutagen.Bethesda.Skyrim.DialogTopic.TranslationMask(defaultOn: true)
     {
         Responses = false
     };
 
     public IReadOnlyCollection<ObjectKey> BlacklistedCopyTypes { get; } = new HashSet<ObjectKey> {
-        Skyrim.DialogTopic.StaticRegistration.ObjectKey,
-        Skyrim.DialogResponse.StaticRegistration.ObjectKey,
-        Skyrim.DialogResponses.StaticRegistration.ObjectKey,
-        Skyrim.Worldspace.StaticRegistration.ObjectKey,
-        Skyrim.Cell.StaticRegistration.ObjectKey,
-        Skyrim.NavigationMesh.StaticRegistration.ObjectKey,
-        Skyrim.PlacedNpc.StaticRegistration.ObjectKey,
-        Skyrim.PlacedObject.StaticRegistration.ObjectKey,
+        Mutagen.Bethesda.Skyrim.DialogTopic.StaticRegistration.ObjectKey,
+        Mutagen.Bethesda.Skyrim.DialogResponse.StaticRegistration.ObjectKey,
+        Mutagen.Bethesda.Skyrim.DialogResponses.StaticRegistration.ObjectKey,
+        Mutagen.Bethesda.Skyrim.Worldspace.StaticRegistration.ObjectKey,
+        Mutagen.Bethesda.Skyrim.Cell.StaticRegistration.ObjectKey,
+        Mutagen.Bethesda.Skyrim.NavigationMesh.StaticRegistration.ObjectKey,
+        Mutagen.Bethesda.Skyrim.PlacedNpc.StaticRegistration.ObjectKey,
+        Mutagen.Bethesda.Skyrim.PlacedObject.StaticRegistration.ObjectKey,
     };
 
     public void HandleCopyFor(
@@ -46,10 +45,10 @@ public class SkyrimSpecifications : IGameSpecifications<ISkyrimModGetter, ISkyri
         IModContext<ISkyrimMod, ISkyrimModGetter, ISkyrimMajorRecord, ISkyrimMajorRecordGetter> context,
         IDialogTopicGetter dialogTopic)
     {
-        Skyrim.DialogTopic newRecord;
+        Mutagen.Bethesda.Skyrim.DialogTopic newRecord;
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (Skyrim.DialogTopic)context.GetOrAddAsOverride(state.OutgoingMod);
+            newRecord = (Mutagen.Bethesda.Skyrim.DialogTopic)context.GetOrAddAsOverride(state.OutgoingMod);
             
             // Readd branches below
             newRecord.Responses.Clear();
@@ -59,7 +58,7 @@ public class SkyrimSpecifications : IGameSpecifications<ISkyrimModGetter, ISkyri
         else
         {
             // Don't duplicate branches, as they will be added below
-            newRecord = (Skyrim.DialogTopic)context.Record.Duplicate(state.OutgoingMod.GetNextFormKey(), DialogTopicMask);
+            newRecord = (Mutagen.Bethesda.Skyrim.DialogTopic)context.Record.Duplicate(state.OutgoingMod.GetNextFormKey(), DialogTopicMask);
 
             state.OutgoingMod.DialogTopics.Add(newRecord);
             
@@ -78,10 +77,10 @@ public class SkyrimSpecifications : IGameSpecifications<ISkyrimModGetter, ISkyri
     private void CopyDialogResponse(
         MergeState<ISkyrimMod, ISkyrimModGetter> state,
         ModKey currentMod,
-        Skyrim.DialogTopic topic,
+        Mutagen.Bethesda.Skyrim.DialogTopic topic,
         IDialogResponsesGetter dialogResponses)
     {
-        Skyrim.DialogResponses newRecord;
+        Mutagen.Bethesda.Skyrim.DialogResponses newRecord;
         if (state.IsOverride(dialogResponses.FormKey, currentMod))
         {
             newRecord = dialogResponses.DeepCopy();
