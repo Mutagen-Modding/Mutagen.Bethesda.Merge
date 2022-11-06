@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -42,8 +42,7 @@ namespace MutagenMerger.CLI
                 : options.PluginsToMerge
                     .Select(x => ModKey.FromNameAndExtension(x))
                     .ToList();
-
-            if(Directory.Exists(options.Output)) Directory.Delete(options.Output, true);
+            
             var sw = new Stopwatch();
             sw.Start();
 
