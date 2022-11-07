@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Mutagen.Bethesda;
+using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 using MutagenMerger.Lib;
 using Xunit;

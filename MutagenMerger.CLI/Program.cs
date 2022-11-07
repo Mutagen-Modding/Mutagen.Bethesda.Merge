@@ -1,15 +1,18 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
 using CommandLine;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Fallout4;
 using Mutagen.Bethesda.Oblivion;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
+using MutagenMerger.CLI.Container;
 using MutagenMerger.Lib;
+using MutagenMerger.Lib.DI;
 
 namespace MutagenMerger.CLI
 {
@@ -39,38 +42,33 @@ namespace MutagenMerger.CLI
                 : options.PluginsToMerge
                     .Select(x => ModKey.FromNameAndExtension(x))
                     .ToList();
-
-            if(Directory.Exists(options.Output)) Directory.Delete(options.Output, true);
+            
             var sw = new Stopwatch();
             sw.Start();
 
-            switch (options.Game)
+            Type[] genericTypes;
+            switch (options.Game.ToCategory())
             {
-                case GameRelease.Oblivion:
-                    using (var oMerger = new Merger<IOblivionModGetter, IOblivionMod, IOblivionMajorRecord, IOblivionMajorRecordGetter>(options.DataFolder, plugins, modsToMerge,
-                    ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game))
-                    {
-                        oMerger.Merge();
-                    }
+                case GameCategory.Oblivion:
+                    genericTypes = new Type[] { typeof(IOblivionModGetter), typeof(IOblivionMod), typeof(IOblivionMajorRecord), typeof(IOblivionMajorRecordGetter) };
                     break;
-                case GameRelease.Fallout4:
-                    using (var fMerger = new Merger<IFallout4ModGetter, IFallout4Mod, IFallout4MajorRecord, IFallout4MajorRecordGetter>(options.DataFolder, plugins, modsToMerge,
-                    ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game))
-                    {
-                        fMerger.Merge();
-
-                    }
+                case GameCategory.Fallout4:
+                    genericTypes = new Type[] { typeof(IFallout4ModGetter), typeof(IFallout4Mod), typeof(IFallout4MajorRecord), typeof(IFallout4MajorRecordGetter) };
                     break;
+                case GameCategory.Skyrim:
                 default:
-                    using (var merger = new Merger<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(options.DataFolder, plugins, modsToMerge,
-                    ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game))
-                    {
-                        merger.Merge();
-
-                    }
+                    genericTypes = new Type[] { typeof(ISkyrimModGetter), typeof(ISkyrimMod), typeof(ISkyrimMajorRecord), typeof(ISkyrimMajorRecordGetter) };
                     break;
             }
+            
+            ContainerBuilder builder = new();
+            builder.RegisterModule<MainModule>();
+            var container = builder.Build();
+            var merger = container.Resolve(typeof(Merger<,,,>).MakeGenericType(genericTypes)) as IMerger;
 
+            merger!.Merge(options.DataFolder, plugins, modsToMerge,
+                ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game);
+            
             Console.WriteLine($"Merged {modsToMerge.Count} plugins in {sw.ElapsedMilliseconds}ms");
             sw.Stop();
         }
