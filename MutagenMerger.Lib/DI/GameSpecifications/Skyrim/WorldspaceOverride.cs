@@ -15,7 +15,7 @@ public class WorldspaceOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, IW
         SubCellsUnknown = false,
         SubCellsTimestamp = false,
     };
-    
+
     public override void HandleCopyFor(
         MergeState<ISkyrimMod, ISkyrimModGetter> state,
         IModContext<ISkyrimMod, ISkyrimModGetter, IWorldspace, IWorldspaceGetter> context)
@@ -43,13 +43,5 @@ public class WorldspaceOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, IW
             Console.WriteLine("          Deep Copying [" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
         }
         
-        // Do the branches
-        foreach (var branch in context.Record.SubCells)
-        {
-            // Console.WriteLine(branch.Print("branch"));
-            
-            //CopyDialogResponse(state, context.ModKey, newRecord, branch);
-            // throw new System.NotImplementedException();
         }
-    }
 }
