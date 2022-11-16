@@ -28,6 +28,12 @@ public class CopyRecordProcessor<TMod, TModGetter>
                      .WinningOverrideContexts<TMod, TModGetter, IMajorRecord, IMajorRecordGetter>(mergeState
                          .LinkCache))
         {
+            if (rec.Record.Type.ToString().Contains("Cell")){
+                Console.WriteLine(rec.Record.Type.ToString());
+                Console.WriteLine(rec.Record.FormKey.IDString());
+                Console.WriteLine(rec.Record.EditorID);
+            }
+
             if (_copyOverrides.TryGetValue(rec.Record.Registration.ObjectKey, out var copyOverride))
             {
                 copyOverride.HandleCopyFor(mergeState, rec);

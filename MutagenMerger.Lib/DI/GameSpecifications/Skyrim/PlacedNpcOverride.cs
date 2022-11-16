@@ -9,6 +9,6 @@ public class PlacedNpcOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, IPl
         MergeState<ISkyrimMod, ISkyrimModGetter> state,
         IModContext<ISkyrimMod, ISkyrimModGetter, IPlacedNpc, IPlacedNpcGetter> context)
     {
-        throw new System.NotImplementedException();
+        // Do nothing.  Handled in the Worldpsace/Cell override
     }
 }

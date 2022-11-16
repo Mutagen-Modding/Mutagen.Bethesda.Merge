@@ -33,7 +33,7 @@ namespace MutagenMerger.Lib
             {
                 var rules = new List<string>() {"**/*.@(esp|esm|bsa|ba2|bsl)", "meta.ini",
                     "interface/translations/*.txt", "TES5Edit Backups/**/*",
-                    "fomod/**/*", "screenshot?(s)/**/*", "scripts/source/*.psc"};
+                    "fomod/**/*", "screenshot?(s)/**/*", "scripts/source/*.psc", "source/scripts/*.psc"};
 
                 _mergeState.ModsToMerge.ForEach(x =>
                 {
