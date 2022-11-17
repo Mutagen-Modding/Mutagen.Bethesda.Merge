@@ -24,7 +24,7 @@ public class CopyRecordProcessor<TMod, TModGetter>
     public void CopyRecords(
         MergeState<TMod, TModGetter> mergeState)
     {
-        foreach (var rec in mergeState.Mods
+        foreach (var rec in mergeState.Mods.Where(mod => mergeState.ModsToMerge.Contains(mod.ModKey))
                      .WinningOverrideContexts<TMod, TModGetter, IMajorRecord, IMajorRecordGetter>(mergeState
                          .LinkCache))
         {
@@ -41,6 +41,7 @@ public class CopyRecordProcessor<TMod, TModGetter>
             {
                 CopyAsOverride(mergeState, rec);
             }
+
         }
 
         Console.WriteLine();
@@ -57,6 +58,10 @@ public class CopyRecordProcessor<TMod, TModGetter>
         Console.WriteLine("          Renumbering Record [" + rec.Record.FormKey.ModKey.Name + "] " +
                           rec.Record.FormKey.IDString() + " to [" + mergeState.OutgoingMod.ModKey.Name + "] " +
                           duplicated.FormKey.IDString());
+        if (mergeState.Mapping.ContainsKey(rec.Record.FormKey))
+        {
+            Console.WriteLine(rec.Record.EditorID + " " + rec.Record.FormKey.IDString());
+        }
         mergeState.Mapping.Add(rec.Record.FormKey, duplicated.FormKey);
     }
 

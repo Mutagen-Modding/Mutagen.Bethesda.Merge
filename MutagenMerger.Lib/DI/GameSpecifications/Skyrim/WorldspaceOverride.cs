@@ -24,10 +24,10 @@ public class WorldspaceOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, IW
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
             newRecord = (Mutagen.Bethesda.Skyrim.Worldspace)context.GetOrAddAsOverride(state.OutgoingMod);
-            
             // Readd branches below
             newRecord.LargeReferences.Clear();
             newRecord.SubCells.Clear();
+            newRecord.TopCell?.Clear();
             
             Console.WriteLine("          Copying Override Record[" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString());
         }
@@ -42,6 +42,8 @@ public class WorldspaceOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, IW
             
             Console.WriteLine("          Deep Copying [" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
         }
+
+
         
         }
 }

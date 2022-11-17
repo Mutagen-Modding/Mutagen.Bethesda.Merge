@@ -1,11 +1,13 @@
-﻿using Mutagen.Bethesda;
+﻿using System.Collections.Generic;
+using Mutagen.Bethesda;
+using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Binary.Parameters;
 
 namespace MutagenMerger.Lib
 {
     public static class Utils
     {
-        public static BinaryWriteParameters SafeBinaryWriteParameters => new()
+        public static BinaryWriteParameters SafeBinaryWriteParameters (IEnumerable<ModKey> loadOrder) => new()
         {
                 MasterFlag = MasterFlagOption.ChangeToMatchModKey,
                 ModKey = ModKeyOption.CorrectToPath,
@@ -13,7 +15,8 @@ namespace MutagenMerger.Lib
                 LightMasterLimit = LightMasterLimitOption.ExceptionOnOverflow,
                 MastersListContent = MastersListContentOption.Iterate,
                 FormIDUniqueness = FormIDUniquenessOption.Iterate,
-                NextFormID = NextFormIDOption.Iterate
+                NextFormID = NextFormIDOption.Iterate,
+                MastersListOrdering = new MastersListOrderingByLoadOrder(loadOrder)
         };
     }
 }

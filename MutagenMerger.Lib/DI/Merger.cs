@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Mutagen.Bethesda;
+using Mutagen.Bethesda.Environments;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Order;
 using Mutagen.Bethesda.Plugins.Records;
@@ -15,7 +16,6 @@ namespace MutagenMerger.Lib.DI
     {
         void Merge(
             DirectoryPath dataFolderPath,
-            List<ModKey> plugins,
             IEnumerable<ModKey> modsToMerge, 
             ModKey outputKey,
             DirectoryPath outputFolder,
@@ -41,23 +41,19 @@ namespace MutagenMerger.Lib.DI
         
         public void Merge(
             DirectoryPath dataFolderPath,
-            List<ModKey> plugins,
             IEnumerable<ModKey> modsToMerge, 
             ModKey outputKey,
             DirectoryPath outputFolder,
             GameRelease game)
         {
-            using var loadOrder = LoadOrder.Import(
-                dataFolderPath,
-                plugins,
-                path => ModInstantiator<TModGetter>.Importer(path, game));
-            
             var outputMod = ModInstantiator.Activator(outputKey, game) as TMod ?? throw new Exception("Could not instantiate mod");
+            var env = GameEnvironmentBuilder<TMod,TModGetter>.Create(game).WithTargetDataFolder(dataFolderPath).WithOutputMod(outputMod).Build();
 
-            var mods = loadOrder.PriorityOrder.Resolve().ToArray();
+            var mods = env.LoadOrder.PriorityOrder.Resolve().ToArray();
             var mergingMods = mods.Where(x => modsToMerge.Contains(x.ModKey)).ToArray();
 
             var outputFile = Path.Combine(outputFolder, outputKey.FileName);
+            env.LoadOrder.ForEach(x => Console.WriteLine(x.Value.ModKey));
 
             Console.WriteLine("Merging " + String.Join(", ",mergingMods.Select(x => x.ModKey.FileName.String)) + " into " + Path.GetFileName(outputFile));
             Console.WriteLine();
@@ -73,14 +69,15 @@ namespace MutagenMerger.Lib.DI
                 outputMod,
                 OutputPath: outputFile,
                 DataPath: dataFolderPath,
-                LinkCache: linkCache);
+                LinkCache: linkCache,
+                env: env);
             
             _copyRecordProcessor.CopyRecords(state);
 
             state.OutgoingMod.RemapLinks(state.Mapping);
 
             Directory.CreateDirectory(state.OutputPath.Directory ?? "");
-            state.OutgoingMod.WriteToBinary(state.OutputPath, Utils.SafeBinaryWriteParameters);
+            state.OutgoingMod.WriteToBinary(state.OutputPath, Utils.SafeBinaryWriteParameters(env.LoadOrder.Keys));
 
             HandleAssets(state);
 

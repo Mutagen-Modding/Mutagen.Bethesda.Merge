@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Mutagen.Bethesda;
+using Mutagen.Bethesda.Environments;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Cache.Internals.Implementations;
@@ -15,7 +16,8 @@ public record MergeState<TMod, TModGetter>(
     TMod OutgoingMod, 
     FilePath OutputPath,
     DirectoryPath DataPath,
-    ImmutableLoadOrderLinkCache<TMod, TModGetter> LinkCache) 
+    ImmutableLoadOrderLinkCache<TMod, TModGetter> LinkCache,
+    IGameEnvironment<TMod,TModGetter> env) 
     where TMod : class, IContextMod<TMod, TModGetter>, TModGetter
     where TModGetter : class, IContextGetterMod<TMod, TModGetter>
 {

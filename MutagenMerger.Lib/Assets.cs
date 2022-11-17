@@ -91,6 +91,11 @@ namespace MutagenMerger.Lib
             }
 
             BuildSeqFile(_mergeState.DataPath, temp, _mergeState.OutgoingMod);
+
+
+
+
+            Directory.Delete(temp, true);
         }
 
         private static void BuildSeqFile(string dataPath, string temp, TMod outputMod)
@@ -122,7 +127,7 @@ namespace MutagenMerger.Lib
 
         private static List<UInt32> GetSeqQuests(TMod merge)
         {
-            var masterColl = MasterReferenceCollection.FromPath(Path.Combine(_outputDir,_mergeName), _mergeState.Release);
+            var masterColl = MasterReferenceCollection.FromPath(Path.Combine(_outputDir, _mergeName), _mergeState.Release);
 
             IGroup quests = _mergeState.Release switch
             {
@@ -130,7 +135,7 @@ namespace MutagenMerger.Lib
                 GameRelease.Fallout4 => merge.GetTopLevelGroup<Fallout4.Quest>(),
                 _ => merge.GetTopLevelGroup<Skyrim.Quest>(),
             };
-            
+
             List<UInt32> formIds = new List<UInt32>();
 
             if (quests.Count == 0) return formIds;
