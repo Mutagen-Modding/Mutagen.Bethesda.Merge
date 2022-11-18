@@ -28,7 +28,6 @@ public class CopyRecordProcessor<TMod, TModGetter>
                      .WinningOverrideContexts<TMod, TModGetter, IMajorRecord, IMajorRecordGetter>(mergeState
                          .LinkCache))
         {
-            // Console.WriteLine(rec.Record.Type.ToString());
             if (_copyOverrides.TryGetValue(rec.Record.Registration.ObjectKey, out var copyOverride))
             {
                 copyOverride.HandleCopyFor(mergeState, rec);
@@ -58,10 +57,6 @@ public class CopyRecordProcessor<TMod, TModGetter>
         Console.WriteLine("          Renumbering Record [" + rec.Record.FormKey.ModKey.Name + "] " +
                           rec.Record.FormKey.IDString() + " to [" + mergeState.OutgoingMod.ModKey.Name + "] " +
                           duplicated.FormKey.IDString());
-        if (mergeState.Mapping.ContainsKey(rec.Record.FormKey))
-        {
-            Console.WriteLine(rec.Record.EditorID + " " + rec.Record.FormKey.IDString());
-        }
         mergeState.Mapping.Add(rec.Record.FormKey, duplicated.FormKey);
     }
 

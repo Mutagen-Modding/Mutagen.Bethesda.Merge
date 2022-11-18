@@ -29,7 +29,6 @@ namespace MutagenMerger.CLI
         {
             var modsToMerge = options.PluginsMergeTxt != string.Empty
                 ? (await File.ReadAllLinesAsync(options.PluginsMergeTxt))
-                    .Select (x => {Console.WriteLine(x); return x;})                    
                     .Select(x => ModKey.FromNameAndExtension(x))
                     .ToList()
                 : options.PluginsToMerge

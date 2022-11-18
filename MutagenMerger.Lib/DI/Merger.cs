@@ -60,7 +60,7 @@ namespace MutagenMerger.Lib.DI
             
             var modsToMergeSet = modsToMerge.ToHashSet();
 
-            var linkCache = mods.ToImmutableLinkCache<TMod, TModGetter>();
+            var linkCache = mergingMods.ToImmutableLinkCache<TMod, TModGetter>();
 
             var state = new MergeState<TMod, TModGetter>(
                 game,
