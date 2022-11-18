@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Records;
@@ -55,61 +56,72 @@ public class CellOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, ICell, I
 
     public static void CopySubRecords(MergeState<ISkyrimMod, ISkyrimModGetter> state, IModContext<ISkyrimMod, ISkyrimModGetter, ICell, ICellGetter> context, Cell newRecord)
     {
-        foreach (var nav in context.Record.NavigationMeshes)
+        foreach (var iter in context.Record.ToLink().ResolveAllSimpleContexts(state.LinkCache).Where(x => state.ModsToMerge.Contains(x.ModKey)))
         {
-            Mutagen.Bethesda.Skyrim.NavigationMesh newNav;
-            if (state.IsOverride(nav.FormKey, context.ModKey))
+            foreach (var nav in iter.Record.NavigationMeshes)
             {
-                newNav = nav.DeepCopy();
-            }
-            else
-            {
-                newNav = nav.Duplicate(state.OutgoingMod.GetNextFormKey());
+                Mutagen.Bethesda.Skyrim.NavigationMesh newNav;
+                if (state.IsOverride(nav.FormKey, context.ModKey))
+                {
+                    if (newRecord.NavigationMeshes.Exists(x => x.FormKey == nav.FormKey)) { continue; }
+                    newNav = nav.DeepCopy();
+                }
+                else
+                {
+                    if (state.Mapping.ContainsKey(nav.FormKey)) {continue;}
+                    newNav = nav.Duplicate(state.OutgoingMod.GetNextFormKey());
 
-                state.Mapping.Add(nav.FormKey, newNav.FormKey);
-            }
+                    state.Mapping.Add(nav.FormKey, newNav.FormKey);
+                }
 
-            newRecord.NavigationMeshes.Add(newNav);
-            Console.WriteLine("            Copying Child [" + nav.FormKey.ModKey.Name + "] " + nav.FormKey.IDString() + " to [" + newNav.FormKey.ModKey.Name + "] " + newNav.FormKey.IDString());
-
-        }
-
-        foreach (var pers in context.Record.Persistent)
-        {
-            Mutagen.Bethesda.Skyrim.IPlaced newPersistent;
-            if (state.IsOverride(pers.FormKey, context.ModKey))
-            {
-                newPersistent = (Mutagen.Bethesda.Skyrim.IPlaced)pers.DeepCopy();
-            }
-            else
-            {
-                newPersistent = (Mutagen.Bethesda.Skyrim.IPlaced)pers.Duplicate(state.OutgoingMod.GetNextFormKey());
-
-                state.Mapping.Add(pers.FormKey, newPersistent.FormKey);
-            }
-            newRecord.Persistent.Add(newPersistent);
-
-            Console.WriteLine("            Copying Child [" + pers.FormKey.ModKey.Name + "] " + pers.FormKey.IDString() + " to [" + newPersistent.FormKey.ModKey.Name + "] " + newPersistent.FormKey.IDString());
-
-        }
-
-        foreach (var temp in context.Record.Temporary)
-        {
-            Mutagen.Bethesda.Skyrim.IPlaced newTemp;
-            if (state.IsOverride(temp.FormKey, context.ModKey))
-            {
-                newTemp = (Mutagen.Bethesda.Skyrim.IPlaced)temp.DeepCopy();
+                newRecord.NavigationMeshes.Add(newNav);
+                Console.WriteLine("            Copying Child [" + nav.FormKey.ModKey.Name + "] " + nav.FormKey.IDString() + " to [" + newNav.FormKey.ModKey.Name + "] " + newNav.FormKey.IDString());
 
             }
-            else
-            {
-                newTemp = (Mutagen.Bethesda.Skyrim.IPlaced)temp.Duplicate(state.OutgoingMod.GetNextFormKey());
 
-                state.Mapping.Add(temp.FormKey, newTemp.FormKey);
+            foreach (var pers in iter.Record.Persistent)
+            {
+                Mutagen.Bethesda.Skyrim.IPlaced newPersistent;
+                if (state.IsOverride(pers.FormKey, context.ModKey))
+                {
+                    if (newRecord.Persistent.Exists(x => x.FormKey == pers.FormKey)) { continue; }
+                    newPersistent = (Mutagen.Bethesda.Skyrim.IPlaced)pers.DeepCopy();
+                }
+                else
+                {
+                    if (state.Mapping.ContainsKey(pers.FormKey)) {continue;}
+                    newPersistent = (Mutagen.Bethesda.Skyrim.IPlaced)pers.Duplicate(state.OutgoingMod.GetNextFormKey());
+
+                    state.Mapping.Add(pers.FormKey, newPersistent.FormKey);
+                }
+                newRecord.Persistent.Add(newPersistent);
+
+                Console.WriteLine("            Copying Child [" + pers.FormKey.ModKey.Name + "] " + pers.FormKey.IDString() + " to [" + newPersistent.FormKey.ModKey.Name + "] " + newPersistent.FormKey.IDString());
 
             }
-            newRecord.Persistent.Add(newTemp);
-            Console.WriteLine("            Copying Child [" + temp.FormKey.ModKey.Name + "] " + temp.FormKey.IDString() + " to [" + newTemp.FormKey.ModKey.Name + "] " + newTemp.FormKey.IDString());
+
+            foreach (var temp in iter.Record.Temporary)
+            {
+                Mutagen.Bethesda.Skyrim.IPlaced newTemp;
+                if (state.IsOverride(temp.FormKey, context.ModKey))
+                {
+                    if (newRecord.Temporary.Exists(x => x.FormKey == temp.FormKey)) { continue; }
+                    newTemp = (Mutagen.Bethesda.Skyrim.IPlaced)temp.DeepCopy();
+
+                }
+                else
+                {
+
+                    if (state.Mapping.ContainsKey(temp.FormKey)) {continue;}
+                    newTemp = (Mutagen.Bethesda.Skyrim.IPlaced)temp.Duplicate(state.OutgoingMod.GetNextFormKey());
+
+                    state.Mapping.Add(temp.FormKey, newTemp.FormKey);
+
+                }
+                newRecord.Persistent.Add(newTemp);
+                Console.WriteLine("            Copying Child [" + temp.FormKey.ModKey.Name + "] " + temp.FormKey.IDString() + " to [" + newTemp.FormKey.ModKey.Name + "] " + newTemp.FormKey.IDString());
+
+            }
 
         }
     }
