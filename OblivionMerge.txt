@@ -1,0 +1,3 @@
+ISEmpireSwords.esp
+Tyrael Armor.esp
+Jo-Virr-NS.esp

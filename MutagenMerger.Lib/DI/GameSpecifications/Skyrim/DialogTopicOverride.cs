@@ -19,31 +19,20 @@ public class DialogTopicOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, I
         Mutagen.Bethesda.Skyrim.DialogTopic newRecord;
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (Mutagen.Bethesda.Skyrim.DialogTopic)context.GetOrAddAsOverride(state.OutgoingMod);
-            
-            // Readd branches below
-            newRecord.Responses.Clear();
-            
-            Console.WriteLine("          Copying Override Record[" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString());
+            newRecord = (DialogTopic)Base.DialogTopicOverride.CopyDialogTopicAsOverride(state, context);
         }
         else
         {
-            // Don't duplicate branches, as they will be added below
-            newRecord = (Mutagen.Bethesda.Skyrim.DialogTopic)context.Record.Duplicate(state.OutgoingMod.GetNextFormKey(), DialogTopicMask);
-
-            state.OutgoingMod.DialogTopics.Add(newRecord);
-            
-            state.Mapping.Add(context.Record.FormKey, newRecord.FormKey);
-            
-            Console.WriteLine("          Deep Copying [" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
+            newRecord = (DialogTopic)Base.DialogTopicOverride.DuplicateDialogTopic(state, context, DialogTopicMask);
         }
-        
+
         // Do the branches
         foreach (var branch in context.Record.Responses)
         {
             CopyDialogResponse(state, context.ModKey, newRecord, branch);
         }
     }
+
 
     private void CopyDialogResponse(
         MergeState<ISkyrimMod, ISkyrimModGetter> state,

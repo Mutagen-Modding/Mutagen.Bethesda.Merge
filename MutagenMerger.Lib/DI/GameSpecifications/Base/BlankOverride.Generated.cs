@@ -358,3 +358,15 @@ public class OblivionLandscapeOverride : ACopyOverride<IOblivionMod, IOblivionMo
 }
 
     
+
+public class OblivionDialogItemOverride : ACopyOverride<IOblivionMod, IOblivionModGetter, OblivionRecord.IDialogItem, OblivionRecord.IDialogItemGetter>
+{
+    public override void HandleCopyFor(
+        MergeState<IOblivionMod, IOblivionModGetter> state,
+        IModContext<IOblivionMod, IOblivionModGetter,  OblivionRecord.IDialogItem,  OblivionRecord.IDialogItemGetter> context)
+    {
+        // Do nothing.  Handled elsewhere
+    }
+}
+
+    

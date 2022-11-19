@@ -31,23 +31,13 @@ public class CellOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, ICell, I
 
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (Mutagen.Bethesda.Skyrim.Cell)context.GetOrAddAsOverride(state.OutgoingMod);
+            newRecord = (Mutagen.Bethesda.Skyrim.Cell)Base.CellOverride.CopyCellAsOverride(state, context);
 
-            // Readd branches below
-            newRecord.NavigationMeshes.Clear();
-            newRecord.Persistent.Clear();
-            newRecord.Temporary.Clear();
-            newRecord.Landscape?.Clear();
-            Console.WriteLine("          Copying Override Record[" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString());
         }
         else
         {
             // Don't duplicate branches, as they will be added below
-            newRecord = (Mutagen.Bethesda.Skyrim.Cell)context.DuplicateIntoAsNewRecord(state.OutgoingMod, context.Record.EditorID);
-
-            state.Mapping.Add(context.Record.FormKey, newRecord.FormKey);
-
-            Console.WriteLine("          Deep Copying [" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
+            newRecord = (Mutagen.Bethesda.Skyrim.Cell)Base.CellOverride.DuplicateCell(state, context, CellMask);
         }
 
         CopySubRecords(state, context, newRecord);

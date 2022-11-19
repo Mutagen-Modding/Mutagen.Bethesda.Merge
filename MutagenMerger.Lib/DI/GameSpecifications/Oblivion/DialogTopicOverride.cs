@@ -1,0 +1,62 @@
+﻿using System;
+using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Plugins.Cache;
+using Mutagen.Bethesda.Oblivion;
+
+namespace MutagenMerger.Lib.DI.GameSpecifications.Oblivion;
+
+public class DialogTopicOverride : ACopyOverride<IOblivionMod, IOblivionModGetter, IDialogTopic, IDialogTopicGetter>
+{
+    private static readonly DialogTopic.TranslationMask DialogTopicMask = new Mutagen.Bethesda.Oblivion.DialogTopic.TranslationMask(defaultOn: true)
+    {
+        Items = false
+    };
+    private static readonly DialogItem.TranslationMask DialogItemMask = new Mutagen.Bethesda.Oblivion.DialogItem.TranslationMask(defaultOn: true)
+    {
+        
+    };
+
+    public override void HandleCopyFor(
+        MergeState<IOblivionMod, IOblivionModGetter> state,
+        IModContext<IOblivionMod, IOblivionModGetter, IDialogTopic, IDialogTopicGetter> context)
+    {
+        Mutagen.Bethesda.Oblivion.DialogTopic newRecord;
+        if (state.IsOverride(context.Record.FormKey, context.ModKey))
+        {
+            newRecord = (DialogTopic)Base.DialogTopicOverride.CopyDialogTopicAsOverride(state, context);
+        }
+        else
+        {
+            newRecord = (DialogTopic)Base.DialogTopicOverride.DuplicateDialogTopic(state, context, DialogTopicMask);
+        }
+
+        // Do the branches
+        foreach (var branch in context.Record.Items)
+        {
+            CopyDialogItem(state, context.ModKey, newRecord, branch);
+        }
+    }
+
+
+    private void CopyDialogItem(
+        MergeState<IOblivionMod, IOblivionModGetter> state,
+        ModKey currentMod,
+        Mutagen.Bethesda.Oblivion.DialogTopic topic,
+        IDialogItemGetter item)
+    {
+        Mutagen.Bethesda.Oblivion.DialogItem newRecord;
+        if (state.IsOverride(item.FormKey, currentMod))
+        {
+            newRecord = item.DeepCopy();
+            Console.WriteLine("          Copying Override Record[" + currentMod.Name + "] " + item.FormKey.IDString());
+        }
+        else
+        {
+            newRecord = item.Duplicate(state.OutgoingMod.GetNextFormKey());
+            state.Mapping.Add(item.FormKey, newRecord.FormKey);
+            Console.WriteLine("          Deep Copying [" + currentMod.Name + "] " + item.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
+        }
+        
+        topic.Items.Add(newRecord);
+    }
+}

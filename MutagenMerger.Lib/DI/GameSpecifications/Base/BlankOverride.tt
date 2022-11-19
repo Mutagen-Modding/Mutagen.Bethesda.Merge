@@ -39,7 +39,9 @@ new string[] {"Oblivion","PlacedObject"},
 new string[] {"Oblivion","PlacedNpc"},
 new string[] {"Oblivion","PlacedCreature"},
 new string[] {"Oblivion","PathGrid"},
-new string[] {"Oblivion","Landscape"}
+new string[] {"Oblivion","Landscape"},
+//new string[] {"Oblivion","DialogResponse"},
+new string[] {"Oblivion","DialogItem"}
 };
 
 foreach (string[] pl in placedVariants) {

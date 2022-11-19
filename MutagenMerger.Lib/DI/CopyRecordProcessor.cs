@@ -18,7 +18,9 @@ public class CopyRecordProcessor<TMod, TModGetter>
     public CopyRecordProcessor(ICopyOverride<TMod, TModGetter>[] copyOverrides)
     {
         _copyOverrides = copyOverrides
-            .ToDictionary(x => x.ObjectKey, x => x);
+            // .GroupBy(x => x.ObjectKey)
+            // .ToDictionary(x => x.Key, x => x.First());
+        .ToDictionary(x => x.ObjectKey, x => x);
     }
 
     public void CopyRecords(
