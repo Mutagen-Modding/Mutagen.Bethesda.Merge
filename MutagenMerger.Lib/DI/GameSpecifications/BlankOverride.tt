@@ -1,0 +1,62 @@
+<#@ output extension=".cs" #>
+
+using Mutagen.Bethesda.Plugins.Cache;
+using SkyrimRecord = Mutagen.Bethesda.Skyrim;
+using Fallout4Record = Mutagen.Bethesda.Fallout4;
+using OblivionRecord = Mutagen.Bethesda.Oblivion;
+using Mutagen.Bethesda.Skyrim;
+using Mutagen.Bethesda.Fallout4;
+using Mutagen.Bethesda.Oblivion;
+
+namespace MutagenMerger.Lib.DI.GameSpecifications;
+
+<# var placedVariants = new string[][] {
+new string[] {"Skyrim","PlacedObject"},
+new string[] {"Skyrim","PlacedNpc"},
+new string[] {"Skyrim","PlacedArrow"}, 
+new string[] {"Skyrim","PlacedBarrier"},
+new string[] {"Skyrim","PlacedBeam"},
+new string[] {"Skyrim","PlacedCone"},
+new string[] {"Skyrim","PlacedFlame"},
+new string[] {"Skyrim","PlacedHazard"},
+new string[] {"Skyrim","PlacedMissile"},
+new string[] {"Skyrim","PlacedTrap"},
+new string[] {"Skyrim","DialogResponses"},
+new string[] {"Skyrim","NavigationMesh"},
+new string[] {"Fallout4","PlacedObject"},
+new string[] {"Fallout4","PlacedNpc"},
+new string[] {"Fallout4","PlacedArrow"}, 
+new string[] {"Fallout4","PlacedBarrier"},
+new string[] {"Fallout4","PlacedBeam"},
+new string[] {"Fallout4","PlacedCone"},
+new string[] {"Fallout4","PlacedFlame"},
+new string[] {"Fallout4","PlacedHazard"},
+new string[] {"Fallout4","PlacedMissile"},
+new string[] {"Fallout4","PlacedTrap"},
+new string[] {"Fallout4","NavigationMesh"},
+new string[] {"Fallout4","Landscape"},
+new string[] {"Oblivion","PlacedObject"},
+new string[] {"Oblivion","PlacedNpc"},
+new string[] {"Oblivion","PlacedCreature"},
+new string[] {"Oblivion","PathGrid"},
+new string[] {"Oblivion","Landscape"}
+};
+
+foreach (string[] pl in placedVariants) {
+    #>
+
+
+public class <#= pl[0] #><#= pl[1] #>Override : ACopyOverride<I<#= pl[0] #>Mod, I<#= pl[0] #>ModGetter, <#= pl[0] #>Record.I<#= pl[1] #>, <#= pl[0] #>Record.I<#= pl[1] #>Getter>
+{
+    public override void HandleCopyFor(
+        MergeState<I<#= pl[0] #>Mod, I<#= pl[0] #>ModGetter> state,
+        IModContext<I<#= pl[0] #>Mod, I<#= pl[0] #>ModGetter,  <#= pl[0] #>Record.I<#= pl[1] #>,  <#= pl[0] #>Record.I<#= pl[1] #>Getter> context)
+    {
+        // Do nothing.  Handled elsewhere
+    }
+}
+
+    <#
+}
+
+#>
