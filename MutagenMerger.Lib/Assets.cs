@@ -4,7 +4,6 @@ using System.Linq;
 using System.IO;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins;
-using Mutagen.Bethesda.Plugins.Cache.Internals.Implementations;
 using Mutagen.Bethesda.Plugins.Records;
 using Mutagen.Bethesda.Archives;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -14,6 +13,7 @@ using Skyrim = Mutagen.Bethesda.Skyrim;
 using Fallout4 = Mutagen.Bethesda.Fallout4;
 using Oblivion = Mutagen.Bethesda.Oblivion;
 using Mutagen.Bethesda.Plugins.Masters;
+using System.Threading.Tasks;
 
 namespace MutagenMerger.Lib
 {
@@ -58,10 +58,7 @@ namespace MutagenMerger.Lib
             var matcher = new Matcher();
             matcher.AddIncludePatterns(new string[] { "**/*" });
             matcher.AddExcludePatterns(Rules);
-
-            foreach (var mod in _mergeState.ModsToMerge)
-            {
-
+            Parallel.ForEach(_mergeState.ModsToMerge, mod => {
                 var bsaPattern = mod.FileName.NameWithoutExtension + "*." + (_mergeState.Release == GameRelease.Fallout4 ? "b2a" : "bsa");
                 string[] bsaFiles = Directory.GetFiles(_mergeState.DataPath, bsaPattern);
 
@@ -72,16 +69,15 @@ namespace MutagenMerger.Lib
                     ExtractBSA(bsa);
                 }
                 Console.WriteLine();
-
-            }
+            });
 
             var matches = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(temp)));
 
-            matches.Files.ForEach(x =>
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(_outputDir, x.Path)) ?? "");
-                Console.WriteLine("            Copying extracted asset \"" + x.Path + "\"");
-                File.Copy(Path.Combine(temp, x.Path), Path.Combine(_outputDir, x.Path));
+            Parallel.ForEach(matches.Files, file => {
+                Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(_outputDir, file.Path)) ?? "");
+                Console.WriteLine("            Copying extracted asset \"" + file.Path + "\"");
+                File.Copy(Path.Combine(temp, file.Path), Path.Combine(_outputDir, file.Path));
+
             });
 
             foreach (var mod in _mergeState.ModsToMerge)
@@ -140,11 +136,10 @@ namespace MutagenMerger.Lib
 
             if (quests.Count == 0) return formIds;
 
-            foreach (var quest in quests.Records)
-            {
+            Parallel.ForEach(quests.Records, quest => {
                 var fid = masterColl.GetFormID(quest.FormKey).Raw;
                 formIds.Add(fid);
-            }
+            });
 
             return formIds;
         }
@@ -164,16 +159,14 @@ namespace MutagenMerger.Lib
 
             var reader = Archive.CreateReader(_mergeState.Release, bsa);
             var files = reader.Files.ToArray();
-            for (int i = 0; i < files.Count(); i++)
-            {
+            Parallel.For(0,files.Count(), i => {
                 var file = files[i];
                 var filePath = file.Path.Replace("\\", "/").ToLower();
                 Directory.CreateDirectory(Path.Combine(temp, Path.GetDirectoryName(filePath) ?? ""));
                 Console.SetCursorPosition(0, Console.CursorTop);
                 Console.Write("          Extracting Archive \"" + Path.GetFileName(bsa) + "\" " + ((decimal)i / files.Count()).ToString("0.00%"));
                 File.WriteAllBytes(Path.Combine(temp, filePath), file.GetBytes());
-
-            }
+            });
             Console.SetCursorPosition(0, Console.CursorTop);
             Console.Write("          Extracting Archive \"" + Path.GetFileName(bsa) + "\" 100.00%");
         }

@@ -1,8 +1,5 @@
 ﻿using Autofac;
-using Mutagen.Bethesda.Skyrim;
-using MutagenMerger.Lib;
 using MutagenMerger.Lib.DI;
-using MutagenMerger.Lib.DI.GameSpecifications;
 using MutagenMerger.Lib.DI.GameSpecifications.Skyrim;
 using Noggog.Autofac;
 

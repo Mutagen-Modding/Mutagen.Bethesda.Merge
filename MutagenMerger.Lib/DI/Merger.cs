@@ -5,7 +5,6 @@ using System.Linq;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Environments;
 using Mutagen.Bethesda.Plugins;
-using Mutagen.Bethesda.Plugins.Order;
 using Mutagen.Bethesda.Plugins.Records;
 using MutagenMerger.Lib.DI.GameSpecifications;
 using Noggog;

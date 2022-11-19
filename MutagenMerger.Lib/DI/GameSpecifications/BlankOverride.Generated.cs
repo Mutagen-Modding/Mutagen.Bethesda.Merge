@@ -1,6 +1,4 @@
 
-
-
 using Mutagen.Bethesda.Plugins.Cache;
 using SkyrimRecord = Mutagen.Bethesda.Skyrim;
 using Fallout4Record = Mutagen.Bethesda.Fallout4;

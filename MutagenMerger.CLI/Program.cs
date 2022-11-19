@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 using Autofac;
 using CommandLine;
 using Mutagen.Bethesda;
-using Mutagen.Bethesda.Environments;
 using Mutagen.Bethesda.Fallout4;
 using Mutagen.Bethesda.Oblivion;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 using MutagenMerger.CLI.Container;
-using MutagenMerger.Lib;
 using MutagenMerger.Lib.DI;
 
 namespace MutagenMerger.CLI
