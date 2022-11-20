@@ -137,8 +137,15 @@ namespace MutagenMerger.Lib
             if (quests.Count == 0) return formIds;
 
             Parallel.ForEach(quests.Records, quest => {
-                var fid = masterColl.GetFormID(quest.FormKey).Raw;
-                formIds.Add(fid);
+                bool startGameEnabled = _mergeState.Release switch {
+                    GameRelease.Oblivion => ((Oblivion.Quest)quest).Data?.Flags.HasFlag(Oblivion.Quest.Flag.StartGameEnabled) ?? false,
+                    GameRelease.Fallout4 => ((Fallout4.Quest)quest).Data?.Flags.HasFlag(Fallout4.Quest.Flag.StartGameEnabled) ?? false,
+                    _ => ((Skyrim.Quest)quest).Flags.HasFlag(Skyrim.Quest.Flag.StartGameEnabled)
+                };
+                if (startGameEnabled) {
+                    var fid = masterColl.GetFormID(quest.FormKey).Raw;
+                    formIds.Add(fid);
+                }
             });
 
             return formIds;

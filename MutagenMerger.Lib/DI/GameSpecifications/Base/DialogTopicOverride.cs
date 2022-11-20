@@ -37,7 +37,6 @@ public class DialogTopicOverride
         return newRecord;
     }
 
-
     public static IMajorRecord DuplicateDialogTopic<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state,
         IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context, MajorRecord.TranslationMask mask)
 

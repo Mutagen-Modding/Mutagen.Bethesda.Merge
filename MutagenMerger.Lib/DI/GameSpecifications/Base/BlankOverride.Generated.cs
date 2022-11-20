@@ -287,6 +287,42 @@ public class Fallout4NavigationMeshOverride : ACopyOverride<IFallout4Mod, IFallo
 
     
 
+public class Fallout4SceneOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, Fallout4Record.IScene, Fallout4Record.ISceneGetter>
+{
+    public override void HandleCopyFor(
+        MergeState<IFallout4Mod, IFallout4ModGetter> state,
+        IModContext<IFallout4Mod, IFallout4ModGetter,  Fallout4Record.IScene,  Fallout4Record.ISceneGetter> context)
+    {
+        // Do nothing.  Handled elsewhere
+    }
+}
+
+    
+
+public class Fallout4DialogTopicOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, Fallout4Record.IDialogTopic, Fallout4Record.IDialogTopicGetter>
+{
+    public override void HandleCopyFor(
+        MergeState<IFallout4Mod, IFallout4ModGetter> state,
+        IModContext<IFallout4Mod, IFallout4ModGetter,  Fallout4Record.IDialogTopic,  Fallout4Record.IDialogTopicGetter> context)
+    {
+        // Do nothing.  Handled elsewhere
+    }
+}
+
+    
+
+public class Fallout4DialogResponsesOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, Fallout4Record.IDialogResponses, Fallout4Record.IDialogResponsesGetter>
+{
+    public override void HandleCopyFor(
+        MergeState<IFallout4Mod, IFallout4ModGetter> state,
+        IModContext<IFallout4Mod, IFallout4ModGetter,  Fallout4Record.IDialogResponses,  Fallout4Record.IDialogResponsesGetter> context)
+    {
+        // Do nothing.  Handled elsewhere
+    }
+}
+
+    
+
 public class Fallout4LandscapeOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, Fallout4Record.ILandscape, Fallout4Record.ILandscapeGetter>
 {
     public override void HandleCopyFor(

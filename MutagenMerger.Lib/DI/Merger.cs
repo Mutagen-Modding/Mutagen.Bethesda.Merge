@@ -78,6 +78,16 @@ namespace MutagenMerger.Lib.DI
             Directory.CreateDirectory(state.OutputPath.Directory ?? "");
             state.OutgoingMod.WriteToBinary(state.OutputPath, Utils.SafeBinaryWriteParameters(env.LoadOrder.Keys));
 
+            foreach (var rec in state.OutgoingMod.EnumerateMajorRecords())
+            {
+                foreach (var link in rec.EnumerateFormLinks())
+                {
+                    IMajorRecordGetter? majorRecord = null;
+                    link.TryResolveCommon(state.LinkCache, out majorRecord);
+                    Console.WriteLine(majorRecord?.ToString() + ":" +link.FormKey);
+                }
+            }
+
             HandleAssets(state);
 
             HandleScripts(state);

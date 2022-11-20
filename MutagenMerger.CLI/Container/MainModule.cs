@@ -13,13 +13,7 @@ public class MainModule : Autofac.Module
     {
         builder.RegisterGeneric(typeof(Merger<,,,>)).AsSelf();
         builder.RegisterGeneric(typeof(CopyRecordProcessor<,>)).AsSelf();
-        builder.RegisterAssemblyTypes(typeof(SkyrimSpecifications).Assembly)
-            .InNamespacesOf(typeof(IMerger))
-            .AsImplementedInterfaces();
-        builder.RegisterAssemblyTypes(typeof(OblivionSpecifications).Assembly)
-            .InNamespacesOf(typeof(IMerger))
-            .AsImplementedInterfaces();
-        builder.RegisterAssemblyTypes(typeof(Fallout4Specifications).Assembly)
+        builder.RegisterAssemblyTypes(typeof(IMerger).Assembly)
             .InNamespacesOf(typeof(IMerger))
             .AsImplementedInterfaces();
     }

@@ -2,13 +2,13 @@
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Records;
-using Mutagen.Bethesda.Skyrim;
+using Mutagen.Bethesda.Fallout4;
 
-namespace MutagenMerger.Lib.DI.GameSpecifications.Skyrim;
+namespace MutagenMerger.Lib.DI.GameSpecifications.Fallout4;
 
-public class CellOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, ICell, ICellGetter>
+public class CellOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, ICell, ICellGetter>
 {
-    public static readonly Cell.TranslationMask CellMask = new Mutagen.Bethesda.Skyrim.Cell.TranslationMask(defaultOn: true)
+    public static readonly Cell.TranslationMask CellMask = new Mutagen.Bethesda.Fallout4.Cell.TranslationMask(defaultOn: true)
     {
         Persistent = false,
         Temporary = false,
@@ -22,22 +22,22 @@ public class CellOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, ICell, I
         TemporaryUnknownGroupData = false,
     };
     public override void HandleCopyFor(
-        MergeState<ISkyrimMod, ISkyrimModGetter> state,
-        IModContext<ISkyrimMod, ISkyrimModGetter, ICell, ICellGetter> context)
+        MergeState<IFallout4Mod, IFallout4ModGetter> state,
+        IModContext<IFallout4Mod, IFallout4ModGetter, ICell, ICellGetter> context)
     {
 
-        Mutagen.Bethesda.Skyrim.Cell? newRecord;
+        Mutagen.Bethesda.Fallout4.Cell? newRecord;
 
 
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (Mutagen.Bethesda.Skyrim.Cell)Base.CellOverride.CopyCellAsOverride(state, context);
+            newRecord = (Mutagen.Bethesda.Fallout4.Cell)Base.CellOverride.CopyCellAsOverride(state, context);
 
         }
         else
         {
             // Don't duplicate branches, as they will be added below
-            newRecord = (Mutagen.Bethesda.Skyrim.Cell)Base.CellOverride.DuplicateCell(state, context, CellMask);
+            newRecord = (Mutagen.Bethesda.Fallout4.Cell)Base.CellOverride.DuplicateCell(state, context, CellMask);
         }
 
         Base.CellOverride.CopySubRecords(state, context, newRecord);
