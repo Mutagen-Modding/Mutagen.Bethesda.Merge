@@ -2,6 +2,7 @@
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Oblivion;
+using Mutagen.Bethesda.Plugins.Records;
 
 namespace MutagenMerger.Lib.DI.GameSpecifications.Oblivion;
 
@@ -23,11 +24,11 @@ public class DialogTopicOverride : ACopyOverride<IOblivionMod, IOblivionModGette
         Mutagen.Bethesda.Oblivion.DialogTopic newRecord;
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (DialogTopic)Base.DialogTopicOverride.CopyDialogTopicAsOverride(state, context);
+            newRecord = (DialogTopic)Base.DialogTopicOverride.CopyDialogTopicAsOverride(state, (IMajorRecordGetter)context.Record);
         }
         else
         {
-            newRecord = (DialogTopic)Base.DialogTopicOverride.DuplicateDialogTopic(state, context, DialogTopicMask);
+            newRecord = (DialogTopic)Base.DialogTopicOverride.DuplicateDialogTopic(state, (IMajorRecordGetter)context.Record, DialogTopicMask);
         }
 
         // Do the branches
@@ -56,7 +57,7 @@ public class DialogTopicOverride : ACopyOverride<IOblivionMod, IOblivionModGette
             state.Mapping.Add(item.FormKey, newRecord.FormKey);
             Console.WriteLine("          Deep Copying [" + currentMod.Name + "] " + item.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
         }
-        
+
         topic.Items.Add(newRecord);
     }
 }

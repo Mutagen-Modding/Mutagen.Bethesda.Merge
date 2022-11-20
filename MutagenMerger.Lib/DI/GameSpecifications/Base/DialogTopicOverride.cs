@@ -3,7 +3,11 @@ using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Records;
 using SkyrimRecord = Mutagen.Bethesda.Skyrim;
+using Fallout4Record = Mutagen.Bethesda.Fallout4;
 using OblivionRecord = Mutagen.Bethesda.Oblivion;
+using Mutagen.Bethesda.Plugins;
+using Noggog;
+using System.Collections.Generic;
 
 namespace MutagenMerger.Lib.DI.GameSpecifications.Base;
 
@@ -11,42 +15,38 @@ public class DialogTopicOverride
 {
 
 
-    public static IMajorRecord CopyDialogTopicAsOverride<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state,
-        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context)
+    public static IMajorRecord CopyDialogTopicAsOverride<TMod, TModGetter>(MergeState<TMod, TModGetter> state,
+        IMajorRecordGetter record)
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
-        where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
-        where TMajorRecordGetter : class, IMajorRecordGetter
     {
-        IMajorRecord newRecord = context.GetOrAddAsOverride(state.OutgoingMod);
+        IMajorRecord newRecord = record.DeepCopy();
 
         switch (state.Release)
         {
             case GameRelease.Oblivion:
                 ((OblivionRecord.DialogTopic)newRecord).Items.Clear();
                 break;
-            // case GameRelease.Fallout4:
-            //     ((Fallout4Record.DialogTopic)newRecord).Responses.Clear();
-            //     break;
+            case GameRelease.Fallout4:
+                ((Fallout4Record.DialogTopic)newRecord).Responses.Clear();
+                break;
             default:
                 ((SkyrimRecord.DialogTopic)newRecord).Responses.Clear();
                 break;
         }
 
-        Console.WriteLine("          Copying Override Record[" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString());
+        Console.WriteLine("          Copying Override Record[" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
         return newRecord;
     }
 
-    public static IMajorRecord DuplicateDialogTopic<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state,
-        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context, MajorRecord.TranslationMask mask)
+    public static IMajorRecord DuplicateDialogTopic<TMod, TModGetter>(MergeState<TMod, TModGetter> state,
+        IMajorRecordGetter record, MajorRecord.TranslationMask mask)
 
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
-        where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
-        where TMajorRecordGetter : class, IMajorRecordGetter
     {
         // Don't duplicate branches, as they will be added below
-        IMajorRecord newRecord = context.Record.Duplicate(state.OutgoingMod.GetNextFormKey(), mask);
+        IMajorRecord newRecord = record.Duplicate(state.OutgoingMod.GetNextFormKey(), mask);
 
 
         switch (state.Release)
@@ -54,16 +54,50 @@ public class DialogTopicOverride
             case GameRelease.Oblivion:
                 ((OblivionRecord.OblivionMod)(state.OutgoingMod as IMod)).DialogTopics.Add((OblivionRecord.DialogTopic)newRecord);
                 break;
-            // case GameRelease.Fallout4:
-            //     ((Fallout4Record.Fallout4Mod)(state.OutgoingMod as IMod)).DialogTopics.Add((Fallout4Record.DialogView)newRecord);
-            //     break;
+            case GameRelease.Fallout4:
+                // ((Fallout4Record.Fallout4Mod)(state.OutgoingMod as IMod)).DialogViews.Add((Fallout4Record.DialogView)newRecord);
+                break;
             default:
                 ((SkyrimRecord.SkyrimMod)(state.OutgoingMod as IMod)).DialogTopics.Add((SkyrimRecord.DialogTopic)newRecord);
                 break;
         }
-        state.Mapping.Add(context.Record.FormKey, newRecord.FormKey);
+        state.Mapping.Add(record.FormKey, newRecord.FormKey);
 
-        Console.WriteLine("          Deep Copying [" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
+        Console.WriteLine("          Deep Copying [" + record.FormKey.ModKey.Name + "] " + record.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
         return newRecord;
     }
+
+
+    public static void CopyDialogResponses<TMod, TModGetter>(MergeState<TMod, TModGetter> state,
+        ModKey currentMod,
+        IMajorRecord topic,
+        IMajorRecordGetter dialogResponses)
+        where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
+        where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
+    {
+        IMajorRecord newRecord;
+        if (state.IsOverride(dialogResponses.FormKey, currentMod))
+        {
+            newRecord = dialogResponses.DeepCopy();
+            Console.WriteLine("          Copying Override Record[" + currentMod.Name + "] " + dialogResponses.FormKey.IDString());
+        }
+        else
+        {
+            newRecord = dialogResponses.Duplicate(state.OutgoingMod.GetNextFormKey());
+            state.Mapping.Add(dialogResponses.FormKey, newRecord.FormKey);
+            Console.WriteLine("          Deep Copying [" + currentMod.Name + "] " + dialogResponses.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
+        }
+        switch (state.Release)
+        {
+            case GameRelease.Fallout4:
+                ((Fallout4Record.DialogTopic)topic).Responses.Add((Fallout4Record.DialogResponses)newRecord);
+                break;
+            default:
+                ((SkyrimRecord.DialogTopic)topic).Responses.Add((SkyrimRecord.DialogResponses)newRecord);
+                break;
+        }
+
+    }
+
+
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Cache;
+using Mutagen.Bethesda.Plugins.Records;
 using Mutagen.Bethesda.Skyrim;
 
 namespace MutagenMerger.Lib.DI.GameSpecifications.Skyrim;
@@ -19,40 +20,18 @@ public class DialogTopicOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, I
         Mutagen.Bethesda.Skyrim.DialogTopic newRecord;
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (DialogTopic)Base.DialogTopicOverride.CopyDialogTopicAsOverride(state, context);
+            newRecord = (DialogTopic)Base.DialogTopicOverride.CopyDialogTopicAsOverride(state, (IMajorRecordGetter)context.Record);
         }
         else
         {
-            newRecord = (DialogTopic)Base.DialogTopicOverride.DuplicateDialogTopic(state, context, DialogTopicMask);
+            newRecord = (DialogTopic)Base.DialogTopicOverride.DuplicateDialogTopic(state, (IMajorRecordGetter)context.Record, DialogTopicMask);
         }
 
         // Do the branches
-        foreach (var branch in context.Record.Responses)
+        foreach (var response in context.Record.Responses)
         {
-            CopyDialogResponse(state, context.ModKey, newRecord, branch);
+            Base.DialogTopicOverride.CopyDialogResponses(state, context.ModKey, newRecord, response);
         }
     }
 
-
-    private void CopyDialogResponse(
-        MergeState<ISkyrimMod, ISkyrimModGetter> state,
-        ModKey currentMod,
-        Mutagen.Bethesda.Skyrim.DialogTopic topic,
-        IDialogResponsesGetter dialogResponses)
-    {
-        Mutagen.Bethesda.Skyrim.DialogResponses newRecord;
-        if (state.IsOverride(dialogResponses.FormKey, currentMod))
-        {
-            newRecord = dialogResponses.DeepCopy();
-            Console.WriteLine("          Copying Override Record[" + currentMod.Name + "] " + dialogResponses.FormKey.IDString());
-        }
-        else
-        {
-            newRecord = dialogResponses.Duplicate(state.OutgoingMod.GetNextFormKey());
-            state.Mapping.Add(dialogResponses.FormKey, newRecord.FormKey);
-            Console.WriteLine("          Deep Copying [" + currentMod.Name + "] " + dialogResponses.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
-        }
-        
-        topic.Responses.Add(newRecord);
-    }
 }
