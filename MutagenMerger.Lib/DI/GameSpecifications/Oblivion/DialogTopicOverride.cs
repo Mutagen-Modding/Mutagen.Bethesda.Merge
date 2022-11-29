@@ -53,7 +53,7 @@ public class DialogTopicOverride : ACopyOverride<IOblivionMod, IOblivionModGette
         }
         else
         {
-            newRecord = item.Duplicate(state.OutgoingMod.GetNextFormKey());
+            newRecord = item.Duplicate(state.GetFormKey(item.FormKey));
             state.Mapping.Add(item.FormKey, newRecord.FormKey);
             Console.WriteLine("          Deep Copying [" + currentMod.Name + "] " + item.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
         }

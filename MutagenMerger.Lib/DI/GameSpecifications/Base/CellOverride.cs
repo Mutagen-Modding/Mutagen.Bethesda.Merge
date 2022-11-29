@@ -6,6 +6,10 @@ using SkyrimRecord = Mutagen.Bethesda.Skyrim;
 using Fallout4Record = Mutagen.Bethesda.Fallout4;
 using OblivionRecord = Mutagen.Bethesda.Oblivion;
 using System.Collections.Generic;
+using Mutagen.Bethesda.Oblivion;
+using System.Linq;
+using Mutagen.Bethesda.Fallout4;
+using Mutagen.Bethesda.Skyrim;
 
 namespace MutagenMerger.Lib.DI.GameSpecifications.Base;
 
@@ -57,7 +61,8 @@ public class CellOverride
         where TMajorRecordGetter : class, IMajorRecordGetter
     {
         // Don't duplicate branches, as they will be added below
-        IMajorRecord newRecord = context.DuplicateIntoAsNewRecord(state.OutgoingMod, context.Record.EditorID);
+
+        var newRecord = context.DuplicateIntoAsNewRecord(state.OutgoingMod, context.Record.EditorID);
 
         state.Mapping.Add(context.Record.FormKey, newRecord.FormKey);
 
@@ -148,7 +153,7 @@ public class CellOverride
             }
             else
             {
-                newNav = nav.Duplicate(state.OutgoingMod.GetNextFormKey());
+                newNav = nav.Duplicate(state.GetFormKey(nav.FormKey));
 
                 state.Mapping.Add(nav.FormKey, newNav.FormKey);
             }
@@ -191,7 +196,7 @@ public class CellOverride
         }
         else
         {
-            landscape = originalLandscape.Duplicate(state.OutgoingMod.GetNextFormKey());
+            landscape = originalLandscape.Duplicate(state.GetFormKey(originalLandscape.FormKey));
             if (landscape is not null)
             {
                 state.Mapping.Add(originalLandscape.FormKey, landscape.FormKey);
@@ -242,7 +247,7 @@ public class CellOverride
         }
         else
         {
-            pathing = (OblivionRecord.PathGrid?)originalPathing.Duplicate(state.OutgoingMod.GetNextFormKey());
+            pathing = (OblivionRecord.PathGrid?)originalPathing.Duplicate(state.GetFormKey(originalPathing.FormKey));
 
             if (pathing is not null)
             {
@@ -287,7 +292,7 @@ public class CellOverride
             }
             else
             {
-                newPersistent = pers.Duplicate(state.OutgoingMod.GetNextFormKey());
+                newPersistent = pers.Duplicate(state.GetFormKey(pers.FormKey));
 
                 state.Mapping.Add(pers.FormKey, newPersistent.FormKey);
             }
@@ -338,7 +343,7 @@ public class CellOverride
             else
             {
 
-                newTemp = temp.Duplicate(state.OutgoingMod.GetNextFormKey());
+                newTemp = temp.Duplicate(state.GetFormKey(temp.FormKey));
 
                 state.Mapping.Add(temp.FormKey, newTemp.FormKey);
 
@@ -382,7 +387,7 @@ public class CellOverride
             else
             {
 
-                newVis = (OblivionRecord.IPlaced)vis.Duplicate(state.OutgoingMod.GetNextFormKey());
+                newVis = (OblivionRecord.IPlaced)vis.Duplicate(state.GetFormKey(vis.FormKey));
 
                 state.Mapping.Add(vis.FormKey, newVis.FormKey);
 

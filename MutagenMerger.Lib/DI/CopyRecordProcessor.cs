@@ -5,7 +5,11 @@ using Loqui;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Records;
+using SkyrimRecord = Mutagen.Bethesda.Skyrim;
+using Fallout4Record = Mutagen.Bethesda.Fallout4;
+using OblivionRecord = Mutagen.Bethesda.Oblivion;
 using MutagenMerger.Lib.DI.GameSpecifications;
+using Noggog;
 
 namespace MutagenMerger.Lib.DI;
 
@@ -53,13 +57,28 @@ public class CopyRecordProcessor<TMod, TModGetter>
         IModContext<TMod, TModGetter, IMajorRecord, IMajorRecordGetter> rec)
     {
         //record is not an override so we can just duplicate it
-        var duplicated = rec.DuplicateIntoAsNewRecord(mergeState.OutgoingMod, rec.Record.EditorID);
+        //var duplicated = rec.DuplicateIntoAsNewRecord(mergeState.OutgoingMod, rec.Record.EditorID);
+        MajorRecord duplicated = DuplicateAndRenumber(mergeState, rec);
+        // mergeState.OutgoingMod.Add(duplicated);
 
 
         Console.WriteLine("          Renumbering Record [" + rec.Record.FormKey.ModKey.Name + "] " +
                           rec.Record.FormKey.IDString() + " to [" + mergeState.OutgoingMod.ModKey.Name + "] " +
                           duplicated.FormKey.IDString());
         mergeState.Mapping.Add(rec.Record.FormKey, duplicated.FormKey);
+    }
+
+    private static MajorRecord DuplicateAndRenumber(MergeState<TMod, TModGetter> mergeState, IModContext<TMod, TModGetter, IMajorRecord, IMajorRecordGetter> rec)
+    {
+        var duplicated = rec.Record.Duplicate(mergeState.GetFormKey(rec.Record.FormKey));
+        var type = rec.Record.Registration.ClassType;
+        if (type.InheritsFrom(typeof(Fallout4Record.IAObjectModificationGetter)))
+        {
+            type = typeof(Fallout4Record.AObjectModification);
+        }
+        var group = mergeState.OutgoingMod.GetTopLevelGroup(type);
+        group.AddUntyped(duplicated);
+        return duplicated;
     }
 
     private void CopyAsOverride(
@@ -80,7 +99,7 @@ public class CopyRecordProcessor<TMod, TModGetter>
             if (mergeState.Mapping.ContainsKey(rec.Record.FormKey))
                 throw new NotImplementedException();
 
-            var duplicate = rec.DuplicateIntoAsNewRecord(mergeState.OutgoingMod, rec.Record.EditorID);
+            var duplicate = DuplicateAndRenumber(mergeState, rec);
             Console.WriteLine("          Renumbering Record[" + rec.Record.FormKey.ModKey.Name + "] " +
                               rec.Record.FormKey.IDString() + " to [" + mergeState.OutgoingMod.ModKey.Name + "] " +
                               duplicate.FormKey.IDString());

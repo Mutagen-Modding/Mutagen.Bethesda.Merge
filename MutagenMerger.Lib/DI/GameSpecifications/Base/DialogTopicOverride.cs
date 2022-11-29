@@ -46,7 +46,7 @@ public class DialogTopicOverride
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
     {
         // Don't duplicate branches, as they will be added below
-        IMajorRecord newRecord = record.Duplicate(state.OutgoingMod.GetNextFormKey(), mask);
+        IMajorRecord newRecord = record.Duplicate(state.GetFormKey(record.FormKey),mask);
 
 
         switch (state.Release)
@@ -83,7 +83,7 @@ public class DialogTopicOverride
         }
         else
         {
-            newRecord = dialogResponses.Duplicate(state.OutgoingMod.GetNextFormKey());
+            newRecord = dialogResponses.Duplicate(state.GetFormKey(dialogResponses.FormKey));
             state.Mapping.Add(dialogResponses.FormKey, newRecord.FormKey);
             Console.WriteLine("          Deep Copying [" + currentMod.Name + "] " + dialogResponses.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
         }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Environments;
 using Mutagen.Bethesda.Plugins;
@@ -26,4 +27,14 @@ public record MergeState<TMod, TModGetter>(
     {
         return !(ModsToMerge.Contains(rec.ModKey) || currentMod == rec.ModKey);
     }
+
+    public FormKey GetFormKey(FormKey key) {
+        if (OutgoingMod.EnumerateMajorRecords().Where(x => x.FormKey.ID == key.ID).Any()) {
+            return GetFormKey(OutgoingMod.GetNextFormKey());
+        }
+        else {
+            return FormKey.Factory(key.IDString() + ":" + OutgoingMod.ModKey.FileName);
+        }
+    }
+    
 }

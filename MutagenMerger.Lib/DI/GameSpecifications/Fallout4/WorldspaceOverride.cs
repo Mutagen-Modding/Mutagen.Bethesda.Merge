@@ -34,7 +34,7 @@ public class WorldspaceOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter
         else
         {
             // Don't duplicate branches, as they will be added below
-            newRecord = (Mutagen.Bethesda.Fallout4.Worldspace)context.Record.Duplicate(state.OutgoingMod.GetNextFormKey(), WorldspaceMask);
+            newRecord = (Mutagen.Bethesda.Fallout4.Worldspace)context.Record.Duplicate(state.GetFormKey(context.Record.FormKey));
 
             state.OutgoingMod.Worldspaces.Add(newRecord);
             

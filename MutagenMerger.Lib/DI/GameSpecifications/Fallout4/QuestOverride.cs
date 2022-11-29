@@ -31,7 +31,7 @@ public class QuestOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, IQu
         }
         else
         {
-            newRecord = context.Record.Duplicate(state.OutgoingMod.GetNextFormKey(), QuestMask);
+            newRecord = context.Record.Duplicate(state.GetFormKey(context.Record.FormKey), QuestMask);
         }
 
         foreach (var topic in context.Record.DialogTopics)
@@ -63,7 +63,7 @@ public class QuestOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, IQu
             }
             else
             {
-                newBranch = (DialogBranch)branch.Duplicate(state.OutgoingMod.GetNextFormKey());
+                newBranch = (DialogBranch)branch.Duplicate(state.GetFormKey(branch.FormKey));
             }
             state.Mapping.Add(branch.FormKey, newBranch.FormKey);
 
