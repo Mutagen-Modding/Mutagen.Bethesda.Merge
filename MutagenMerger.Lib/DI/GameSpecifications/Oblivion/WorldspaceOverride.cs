@@ -31,7 +31,7 @@ public class WorldspaceOverride : ACopyOverride<IOblivionMod, IOblivionModGetter
         else
         {
             // Don't duplicate branches, as they will be added below
-            newRecord = (Mutagen.Bethesda.Oblivion.Worldspace)context.Record.Duplicate(state.OutgoingMod.GetNextFormKey(), WorldspaceMask);
+            newRecord = (Mutagen.Bethesda.Oblivion.Worldspace)context.Record.Duplicate(state.GetFormKey(context.Record.FormKey), WorldspaceMask);
 
             state.OutgoingMod.Worldspaces.Add(newRecord);
             
