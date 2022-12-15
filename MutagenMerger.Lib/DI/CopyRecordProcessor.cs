@@ -76,6 +76,9 @@ public class CopyRecordProcessor<TMod, TModGetter>
         {
             type = typeof(Fallout4Record.AObjectModification);
         }
+        if (type.InheritsFrom(typeof(SkyrimRecord.Global))) {
+            type = typeof(SkyrimRecord.Global);
+        }
         var group = mergeState.OutgoingMod.GetTopLevelGroup(type);
         group.AddUntyped(duplicated);
         return duplicated;

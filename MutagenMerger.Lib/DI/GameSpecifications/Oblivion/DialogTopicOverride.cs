@@ -12,11 +12,6 @@ public class DialogTopicOverride : ACopyOverride<IOblivionMod, IOblivionModGette
     {
         Items = false
     };
-    private static readonly DialogItem.TranslationMask DialogItemMask = new Mutagen.Bethesda.Oblivion.DialogItem.TranslationMask(defaultOn: true)
-    {
-        
-    };
-
     public override void HandleCopyFor(
         MergeState<IOblivionMod, IOblivionModGetter> state,
         IModContext<IOblivionMod, IOblivionModGetter, IDialogTopic, IDialogTopicGetter> context)

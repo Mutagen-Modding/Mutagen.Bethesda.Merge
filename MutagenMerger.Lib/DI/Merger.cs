@@ -47,7 +47,6 @@ namespace MutagenMerger.Lib.DI
         {
             var outputMod = ModInstantiator.Activator(outputKey, game) as TMod ?? throw new Exception("Could not instantiate mod");
             var env = GameEnvironmentBuilder<TMod,TModGetter>.Create(game).WithTargetDataFolder(dataFolderPath).WithOutputMod(outputMod).Build();
-
             var mods = env.LoadOrder.PriorityOrder.Resolve().ToArray();
             var mergingMods = mods.Where(x => modsToMerge.Contains(x.ModKey)).ToArray();
 
@@ -72,7 +71,7 @@ namespace MutagenMerger.Lib.DI
                 env: env);
             
             _copyRecordProcessor.CopyRecords(state);
-
+            state.Mapping.ForEach(x => Console.WriteLine(x.Key.ToString() + " " + x.Value.ToString()));
             state.OutgoingMod.RemapLinks(state.Mapping);
 
             Directory.CreateDirectory(state.OutputPath.Directory ?? "");
