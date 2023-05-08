@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -11,7 +11,7 @@
     <PackageReference Include="Mono.TextTemplating" Version="2.2.1" />
     <TextTemplate Include="**\*.tt" />
     <Generated Include="**\*.Generated.cs" />
-    <PackageReference Include="Mutagen.Bethesda" Version="0.40-pr005" />
+    <PackageReference Include="Mutagen.Bethesda" Version="0.41" />
   </ItemGroup>
 
   <Target Name="TextTemplateTransform" BeforeTargets="BeforeBuild">

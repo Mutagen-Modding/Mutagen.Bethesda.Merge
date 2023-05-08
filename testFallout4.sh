@@ -5,4 +5,4 @@ game="Fallout4"
 data="/mnt/mediaSSD/SteamLibrary/steamapps/common/Fallout 4/Data"
 output="/home/monyarm/Downloads/TestMerge"
 mergename="TestMerge.esp"
-dotnet run --project "$project" --game "$game" --mergefile Fallout4Merge.txt --data "$data" --output "$output" --mergename "$mergename" | tee log.log
+dotnet run --project "$project" --framework net7.0 --game "$game" --mergefile Fallout4Merge.txt --data "$data" --output "$output" --mergename "$mergename" | tee log.log

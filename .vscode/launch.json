@@ -9,7 +9,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/MutagenMerger.CLI/bin/Debug/net6.0/MutagenMerger.CLI.dll",
+      "program": "${workspaceFolder}/MutagenMerger.CLI/bin/Debug/net7.0/MutagenMerger.CLI.dll",
       "args": [
         "--game",
         "SkyrimSE",
