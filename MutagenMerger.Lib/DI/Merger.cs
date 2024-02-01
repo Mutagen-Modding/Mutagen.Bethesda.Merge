@@ -51,7 +51,7 @@ namespace MutagenMerger.Lib.DI
             var mergingMods = mods.Where(x => modsToMerge.Contains(x.ModKey)).ToArray();
 
             var outputFile = Path.Combine(outputFolder, outputKey.FileName);
-            env.LoadOrder.ForEach(x => Console.WriteLine(x.Value.ModKey));
+            // env.LoadOrder.ForEach(x => Console.WriteLine(x.Value.ModKey));
 
             Console.WriteLine("Merging " + String.Join(", ",mergingMods.Select(x => x.ModKey.FileName.String)) + " into " + Path.GetFileName(outputFile));
             Console.WriteLine();
@@ -71,7 +71,7 @@ namespace MutagenMerger.Lib.DI
                 env: env);
             
             _copyRecordProcessor.CopyRecords(state);
-            state.Mapping.ForEach(x => Console.WriteLine(x.Key.ToString() + " " + x.Value.ToString()));
+            // state.Mapping.ForEach(x => Console.WriteLine(x.Key.ToString() + " " + x.Value.ToString()));
             state.OutgoingMod.RemapLinks(state.Mapping);
 
             Directory.CreateDirectory(state.OutputPath.Directory ?? "");
