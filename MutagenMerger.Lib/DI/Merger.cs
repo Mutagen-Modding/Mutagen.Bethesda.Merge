@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Json;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Environments;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Records;
 using MutagenMerger.Lib.DI.GameSpecifications;
 using Noggog;
+using System.Security.Cryptography;
 
 namespace MutagenMerger.Lib.DI
 {
@@ -90,8 +92,76 @@ namespace MutagenMerger.Lib.DI
             HandleAssets(state);
 
             HandleScripts(state);
+
+            MergeJson(state);
         }
-        
+
+        private void MergeJson(MergeState<TMod, TModGetter> state)
+        {
+            var _outputDir = Path.GetDirectoryName(state.OutputPath) ?? "";
+            var _mergeName = Path.GetFileNameWithoutExtension(state.OutputPath);
+            var _mergePlugin = state.OutgoingMod.ModKey.FileName;
+            var _mergeDir = Path.Combine(_outputDir, "merge - " + _mergeName);
+            if (!Directory.Exists(_mergeDir))
+            {
+                Directory.CreateDirectory(_mergeDir);
+            }
+
+            JsonObject? _mergeJson = new()
+            {
+                { "name", new JsonPrimitive(_mergeName) },
+                { "filename", new JsonPrimitive(_mergePlugin)},
+                { "method", new JsonPrimitive("Mutagen.Bethesda.Merge")},
+                { "loadOrder", new JsonArray (
+                    state.env.LoadOrder.PriorityOrder.Resolve().Select(x => new JsonPrimitive(x.ModKey.FileName)).ToArray()
+                )},
+                {"dateBuilt", new JsonPrimitive(DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.zzZ"))},
+                {"plugins", new JsonArray (
+                    state.ModsToMerge.Select(x => { MD5 md5 = MD5.Create(); return new JsonObject
+                    {
+                        { "filename", new JsonPrimitive(x.FileName) },
+                        { "hash", new JsonPrimitive(BitConverter.ToString(md5.ComputeHash(File.ReadAllBytes(Path.Combine(state.env.DataFolderPath,x.FileName)))).Replace("-", "").ToLowerInvariant()) },
+                        { "dataFolder", new JsonPrimitive(state.env.DataFolderPath)}
+
+                    }; }).ToArray()
+                )}
+            };
+
+            File.WriteAllText(Path.Combine(_mergeDir, "merge.json"), _mergeJson.ToString());
+
+            JsonObject? _mapJson = new(
+                state.ModsToMerge.Select(
+                    x => new KeyValuePair<string, JsonValue>(
+                        x.FileName,
+                        new JsonObject(state.Mapping.Where(y => y.Key.ModKey.Equals(x) && y.Key.ID != y.Value.ID)
+                            .Select(
+                                y => new KeyValuePair<string, JsonValue>(
+                                    y.Key.IDString(), 
+                                    new JsonPrimitive(y.Value.IDString())
+                                )
+                            ).ToArray()))
+                    )
+                );
+
+            File.WriteAllText(Path.Combine(_mergeDir, "map.json"), _mapJson.ToString());
+
+
+
+            JsonObject? _fidJson = new(
+                state.ModsToMerge.Select(
+                    x => new KeyValuePair<string, JsonValue>(
+                        x.FileName,
+                        new JsonArray(state.Mapping.Where(y => y.Key.ModKey.Equals(x))
+                            .Select(
+                                y =>  new JsonPrimitive(y.Value.IDString())
+                            ).ToArray()))
+                    )
+                );
+
+            File.WriteAllText(Path.Combine(_mergeDir, "fidCache.json"), _fidJson.ToString());
+
+        }
+
         private void HandleScripts(
             MergeState<TMod, TModGetter> mergeState)
         {
