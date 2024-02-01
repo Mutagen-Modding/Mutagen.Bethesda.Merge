@@ -4,4 +4,5 @@ game="Fallout4"
 _data="/mnt/mediaSSD/SteamLibrary/steamapps/common/Fallout 4/Data"
 data="/mnt/mediaSSD/SteamLibrary/steamapps/common/Fallout 4/RData"
 MO2_Instance="/mnt/mediaSSD/Bethesda/MO2 Instances/Fallout 4"
-./merge.sh TestMerge Fallout4Merge.txt ~/Downloads
+
+./merge.sh "$1" "$2" "$3"
