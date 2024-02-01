@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+      - prerelease
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+  pull_request:
+    branches:
+      - dev
+      - main
+      - prerelease
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+
+jobs:
+  build-test:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        sln:
+          - MutagenMerger.sln
+          
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        dotnet clean ${{ matrix.sln }} -c Release && dotnet nuget locals all --clear
+        dotnet restore ${{ matrix.sln }}
+    - name: Build
+      run: dotnet build ${{ matrix.sln }} -c Release --no-restore /p:GeneratePackageOnBuild=false
+    - name: Test
+      run: dotnet test ${{ matrix.sln }} -c Release --no-build
