@@ -68,7 +68,7 @@ namespace MutagenMerger.Lib
                 {
                     ExtractBSA(bsa);
                 }
-                Console.WriteLine();
+                // Console.WriteLine();
             });
 
             var matches = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(temp)));
