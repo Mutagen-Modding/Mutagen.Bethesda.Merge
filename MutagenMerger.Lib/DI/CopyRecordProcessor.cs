@@ -61,11 +61,17 @@ public class CopyRecordProcessor<TMod, TModGetter>
         MajorRecord duplicated = DuplicateAndRenumber(mergeState, rec);
         // mergeState.OutgoingMod.Add(duplicated);
 
-
-        Console.WriteLine("          Renumbering Record [" + rec.Record.FormKey.ModKey.Name + "] " +
-                          rec.Record.FormKey.IDString() + " to [" + mergeState.OutgoingMod.ModKey.Name + "] " +
-                          duplicated.FormKey.IDString());
-        mergeState.Mapping.Add(rec.Record.FormKey, duplicated.FormKey);
+        if (rec.Record.FormKey.ID != duplicated.FormKey.ID)
+        {
+            Console.WriteLine("          Renumbering Record [" + rec.Record.FormKey.ModKey.Name + "] " +
+                              rec.Record.FormKey.IDString() + " to [" + mergeState.OutgoingMod.ModKey.Name + "] " +
+                              duplicated.FormKey.IDString());
+            mergeState.Mapping.Add(rec.Record.FormKey, duplicated.FormKey);
+        }
+        else {
+            Console.WriteLine("          Copying Record [" + rec.Record.FormKey.ModKey.Name + "] " +
+                              rec.Record.FormKey.IDString());
+        }
     }
 
     private static MajorRecord DuplicateAndRenumber(MergeState<TMod, TModGetter> mergeState, IModContext<TMod, TModGetter, IMajorRecord, IMajorRecordGetter> rec)
@@ -103,9 +109,18 @@ public class CopyRecordProcessor<TMod, TModGetter>
                 throw new NotImplementedException();
 
             var duplicate = DuplicateAndRenumber(mergeState, rec);
-            Console.WriteLine("          Renumbering Record[" + rec.Record.FormKey.ModKey.Name + "] " +
-                              rec.Record.FormKey.IDString() + " to [" + mergeState.OutgoingMod.ModKey.Name + "] " +
-                              duplicate.FormKey.IDString());
+
+            if (rec.Record.FormKey.ID != duplicate.FormKey.ID)
+            {
+                Console.WriteLine("          Renumbering Record[" + rec.Record.FormKey.ModKey.Name + "] " +
+                                  rec.Record.FormKey.IDString() + " to [" + mergeState.OutgoingMod.ModKey.Name + "] " +
+                                  duplicate.FormKey.IDString());
+            }
+            else
+            {
+                Console.WriteLine("          Copying Record[" + rec.Record.FormKey.ModKey.Name + "] " +
+                                  rec.Record.FormKey.IDString());
+            }
             mergeState.Mapping.Add(rec.Record.FormKey, duplicate.FormKey);
         }
         else
