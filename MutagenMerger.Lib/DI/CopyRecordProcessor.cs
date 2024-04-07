@@ -17,14 +17,14 @@ public class CopyRecordProcessor<TMod, TModGetter>
     where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
     where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
 {
-    private readonly Dictionary<ObjectKey, ICopyOverride<TMod, TModGetter>> _copyOverrides;
+    private readonly Dictionary<ProtocolKey, ICopyOverride<TMod, TModGetter>> _copyOverrides;
 
     public CopyRecordProcessor(ICopyOverride<TMod, TModGetter>[] copyOverrides)
     {
         _copyOverrides = copyOverrides
-            // .GroupBy(x => x.ObjectKey)
+            // .GroupBy(x => x.ProtocolKey)
             // .ToDictionary(x => x.Key, x => x.First());
-        .ToDictionary(x => x.ObjectKey, x => x);
+        .ToDictionary(x => x.ProtocolKey, x => x);
     }
 
     public void CopyRecords(
@@ -34,7 +34,7 @@ public class CopyRecordProcessor<TMod, TModGetter>
                      .WinningOverrideContexts<TMod, TModGetter, IMajorRecord, IMajorRecordGetter>(mergeState
                          .LinkCache))
         {
-            if (_copyOverrides.TryGetValue(rec.Record.Registration.ObjectKey, out var copyOverride))
+            if (_copyOverrides.TryGetValue(rec.Record.Registration.ProtocolKey, out var copyOverride))
             {
                 copyOverride.HandleCopyFor(mergeState, rec);
             }
@@ -66,12 +66,12 @@ public class CopyRecordProcessor<TMod, TModGetter>
             Console.WriteLine("          Renumbering Record [" + rec.Record.FormKey.ModKey.Name + "] " +
                               rec.Record.FormKey.IDString() + " to [" + mergeState.OutgoingMod.ModKey.Name + "] " +
                               duplicated.FormKey.IDString());
-            mergeState.Mapping.Add(rec.Record.FormKey, duplicated.FormKey);
         }
         else {
             Console.WriteLine("          Copying Record [" + rec.Record.FormKey.ModKey.Name + "] " +
                               rec.Record.FormKey.IDString());
         }
+            mergeState.Mapping.Add(rec.Record.FormKey, duplicated.FormKey);
     }
 
     private static MajorRecord DuplicateAndRenumber(MergeState<TMod, TModGetter> mergeState, IModContext<TMod, TModGetter, IMajorRecord, IMajorRecordGetter> rec)
@@ -86,6 +86,7 @@ public class CopyRecordProcessor<TMod, TModGetter>
             type = typeof(SkyrimRecord.Global);
         }
         var group = mergeState.OutgoingMod.GetTopLevelGroup(type);
+        Console.WriteLine(group.ToString());
         group.AddUntyped(duplicated);
         return duplicated;
     }

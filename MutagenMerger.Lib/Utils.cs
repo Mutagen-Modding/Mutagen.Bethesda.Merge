@@ -11,7 +11,7 @@ namespace MutagenMerger.Lib
                 MasterFlag = MasterFlagOption.ChangeToMatchModKey,
                 ModKey = ModKeyOption.CorrectToPath,
                 RecordCount = RecordCountOption.Iterate,
-                LightMasterLimit = LightMasterLimitOption.ExceptionOnOverflow,
+                LightLimit = LightLimitOption.ExceptionOnOverflow,
                 MastersListContent = MastersListContentOption.Iterate,
                 FormIDUniqueness = FormIDUniquenessOption.Iterate,
                 NextFormID = NextFormIDOption.Iterate,
