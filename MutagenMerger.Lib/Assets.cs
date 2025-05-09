@@ -9,22 +9,33 @@ using Skyrim = Mutagen.Bethesda.Skyrim;
 using Fallout4 = Mutagen.Bethesda.Fallout4;
 using Oblivion = Mutagen.Bethesda.Oblivion;
 using Mutagen.Bethesda.Plugins.Masters;
+using Noggog.IO;
 
 namespace MutagenMerger.Lib;
 
-public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
+public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
     where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
     where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
     where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
     where TMajorRecordGetter : class, IMajorRecordGetter
 {
-    static MergeState<TMod, TModGetter> _mergeState = null!;
-    static string _outputDir = "";
-    static string _mergeName = "";
-    static string temp = GetTemporaryDirectory();
-    public static List<string> Rules { get; } = GetRules();
+    private readonly MergeState<TMod, TModGetter> _mergeState;
+    private readonly string _outputDir;
+    private readonly string _mergeName;
+    private readonly List<string> _rules;
 
-    private static List<string> GetRules()
+    public delegate AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> Factory(
+        MergeState<TMod, TModGetter> mergeState);
+    
+    public AssetMerge(MergeState<TMod, TModGetter> mergeState)
+    {
+        _mergeState = mergeState;
+        _rules = GetRules();
+        _outputDir = Path.GetDirectoryName(_mergeState.OutputPath) ?? "";
+        _mergeName = Path.GetFileName(_mergeState.OutputPath);
+    }
+
+    private List<string> GetRules()
     {
         var rules = new List<string>() {"**/*.@(esp|esm|bsa|ba2|bsl)", "meta.ini",
             "interface/translations/*.txt", "TES5Edit Backups/**/*",
@@ -43,15 +54,12 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
         return rules;
     }
     
-    public static void Handle(
-        MergeState<TMod, TModGetter> mergeState)
+    public void Handle()
     {
-        _mergeState = mergeState;
-        _outputDir = Path.GetDirectoryName(mergeState.OutputPath) ?? "";
-        _mergeName = Path.GetFileName(mergeState.OutputPath);
+        using var temp = TempFolder.Factory();
         var matcher = new Matcher();
         matcher.AddIncludePatterns(new string[] { "**/*" });
-        matcher.AddExcludePatterns(Rules);
+        matcher.AddExcludePatterns(_rules);
         Parallel.ForEach(_mergeState.ModsToMerge, mod => {
             var bsaPattern = mod.FileName.NameWithoutExtension + "*." + (_mergeState.Release == GameRelease.Fallout4 ? "b2a" : "bsa");
             string[] bsaFiles = Directory.GetFiles(_mergeState.DataPath, bsaPattern);
@@ -60,31 +68,29 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
 
             foreach (string bsa in bsaFiles)
             {
-                ExtractBSA(bsa);
+                ExtractBSA(bsa, temp.Dir);
             }
             // Console.WriteLine();
         });
 
-        var matches = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(temp)));
+        var matches = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(temp.Dir)));
 
         Parallel.ForEach(matches.Files, file => {
             Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(_outputDir, file.Path)) ?? "");
             Console.WriteLine("            Copying extracted asset \"" + file.Path + "\"");
-            File.Copy(Path.Combine(temp, file.Path), Path.Combine(_outputDir, file.Path));
-
+            File.Copy(Path.Combine(temp.Dir, file.Path), Path.Combine(_outputDir, file.Path));
         });
 
         foreach (var mod in _mergeState.ModsToMerge)
         {
             CopyAssets(_mergeState.DataPath, mod);
-            CopyAssets(temp, mod);
+            CopyAssets(temp.Dir, mod);
         }
 
-        BuildSeqFile(_mergeState.DataPath, temp, _mergeState.OutgoingMod);
-        Directory.Delete(temp, true);
+        BuildSeqFile(_mergeState.DataPath, temp.Dir, _mergeState.OutgoingMod);
     }
 
-    private static void BuildSeqFile(string dataPath, string temp, TMod outputMod)
+    private void BuildSeqFile(string dataPath, DirectoryPath temp, TMod outputMod)
     {
         var formIds = GetSeqQuests(outputMod);
         if (formIds.Count == 0) return;
@@ -111,7 +117,7 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
         // progressLogger.log('Created SEQ file: ' + filePath);
     }
 
-    private static List<UInt32> GetSeqQuests(TMod merge)
+    private List<UInt32> GetSeqQuests(TMod merge)
     {
         var masterColl = MasterReferenceCollection.FromPath(Path.Combine(_outputDir, _mergeName), _mergeState.Release);
 
@@ -145,7 +151,7 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
         return formIds;
     }
 
-    private static void CopyAssets(string path, ModKey mod)
+    private void CopyAssets(DirectoryPath path, ModKey mod)
     {
         CopyActorAssets(path, "textures/actors/character/facegendata/facetint", mod);
         CopyActorAssets(path, "meshes/actors/character/facegendata/facegeom", mod);
@@ -154,7 +160,7 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
         CopyTranslations(path, mod);
     }
 
-    private static void ExtractBSA(string bsa)
+    private void ExtractBSA(string bsa, DirectoryPath temp)
     {
         Console.WriteLine();
 
@@ -172,7 +178,7 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
         Console.Write("          Extracting Archive \"" + Path.GetFileName(bsa) + "\" 100.00%");
     }
 
-    private static void CopyTranslations(string dir, ModKey mod)
+    private void CopyTranslations(string dir, ModKey mod)
     {
         var path = "interface/translations/";
         var srcPath = Path.Combine(dir, path);
@@ -198,7 +204,7 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
         };
     }
 
-    private static void CopyActorAssets(string dir, string _path, ModKey mod)
+    private void CopyActorAssets(string dir, string _path, ModKey mod)
     {
         var path = _path.Replace("\\", "/");
 
@@ -210,8 +216,7 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
 
         Console.WriteLine("          Copying assets from directory \"" + Path.Combine(path, mod.FileName.String.ToLower()) + "\"");
         Console.WriteLine("          Copying assets to directory \"" + Path.Combine(path, _mergeName) + "\"");
-
-
+        
         _mergeState.Mapping.Where(x => x.Key.ModKey == mod).ForEach(x =>
         {
             var srcId = x.Key.ID;
@@ -241,12 +246,5 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
 
             }
         });
-    }
-
-    private static string GetTemporaryDirectory()
-    {
-        string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        Directory.CreateDirectory(tempDirectory);
-        return tempDirectory;
     }
 }

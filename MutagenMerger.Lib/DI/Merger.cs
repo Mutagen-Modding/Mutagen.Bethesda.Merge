@@ -25,13 +25,16 @@ public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> :
     where TMajorRecord : class, TMajorRecordGetter, IMajorRecord
     where TMajorRecordGetter : class, IMajorRecordGetter
 {
+    private readonly AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.Factory _assetMergeFactory;
     private readonly IGameSpecifications<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> _gameSpecs;
     private readonly CopyRecordProcessor<TMod, TModGetter> _copyRecordProcessor;
 
     public Merger(
+        AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.Factory assetMergeFactory,
         IGameSpecifications<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> gameSpecs,
         CopyRecordProcessor<TMod, TModGetter> copyRecordProcessor)
     {
+        _assetMergeFactory = assetMergeFactory;
         _gameSpecs = gameSpecs;
         _copyRecordProcessor = copyRecordProcessor;
     }
@@ -170,6 +173,7 @@ public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> :
 
     private void HandleAssets(MergeState<TMod, TModGetter> mergeState)
     {
-        AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.Handle(mergeState);
+        var assetMerge = _assetMergeFactory(mergeState);
+        assetMerge.Handle();
     }
 }
