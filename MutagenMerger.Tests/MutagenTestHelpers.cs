@@ -1,6 +1,8 @@
 ﻿using System.IO.Abstractions;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
+using Noggog;
+using Shouldly;
 using Xunit;
 
 namespace MutagenMerger.Tests;
@@ -14,24 +16,25 @@ public class MutagenTestHelpers
         _fileSystem = fileSystem;
     }
     
-    public string CreateDummyPlugin(string folder, string fileName, Action<SkyrimMod> addRecords)
+    public ModPath CreateDummyPlugin(DirectoryPath directory, ModKey modName, Action<SkyrimMod> addRecords)
     {
-        _fileSystem.Directory.CreateDirectory(folder);
-        var outputPath = Path.Combine(folder, fileName);
+        var modPath = ModPath.FromPath(Path.Combine(directory, modName.FileName));
+        modPath.Path.Directory?.Create(_fileSystem);
             
-        var mod = new SkyrimMod(ModKey.FromNameAndExtension(fileName), SkyrimRelease.SkyrimSE);
+        var mod = new SkyrimMod(modPath.ModKey, SkyrimRelease.SkyrimSE);
         addRecords(mod);
         mod.BeginWrite
-            .ToPath(outputPath)
+            .ToPath(modPath.Path)
             .WithNoLoadOrder()
             .WithFileSystem(_fileSystem)
             .Write();
-        return fileName;
+
+        return modPath;
     }
 
-    public void TestPlugin(string path, Action<ISkyrimModDisposableGetter> verify)
+    public void TestPlugin(ModPath path, Action<ISkyrimModDisposableGetter> verify)
     {
-        Assert.True(_fileSystem.File.Exists(path));
+        _fileSystem.File.Exists(path).ShouldBeTrue();
 
         using var mod = SkyrimMod.Create(SkyrimRelease.SkyrimSE)
             .FromPath(path)

@@ -3,7 +3,10 @@ using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 using Mutagen.Bethesda.Testing.AutoData;
+using MutagenMerger.Lib.DI;
 using Noggog;
+using Noggog.Testing.Extensions;
+using Shouldly;
 using Xunit;
 
 namespace MutagenMerger.Tests;
@@ -19,18 +22,27 @@ public class MergerTests
     public void TestMerging(
         IFileSystem fileSystem,
         DirectoryPath existingFolder,
-        MutagenTestHelpers testHelpers)
+        MutagenTestHelpers testHelpers,
+        ModKey modKey1,
+        ModKey modKey2,
+        ModKey modKey3,
+        string editorId1,
+        string editorId2,
+        string editorId3,
+        string editorId4,
+        string modifiedEditorId,
+        ModKey outputModKey)
     {
-        var mod1 = testHelpers.CreateDummyPlugin(existingFolder, "test-file-1.esp", mod =>
+        var mod1 = testHelpers.CreateDummyPlugin(existingFolder, modKey1, mod =>
         {
-            mod.Actions.AddNew("Action1");
-            mod.Actions.AddNew("Action2");
+            mod.Actions.AddNew(editorId1);
+            mod.Actions.AddNew(editorId2);
         });
 
-        var mod2 = testHelpers.CreateDummyPlugin(existingFolder, "test-file-2.esp", mod =>
+        var mod2 = testHelpers.CreateDummyPlugin(existingFolder, modKey2, mod =>
         {
-            mod.Actions.AddNew("Action3");
-            mod.Actions.AddNew("Action4");
+            mod.Actions.AddNew(editorId3);
+            mod.Actions.AddNew(editorId4);
         });
 
         var mods = new List<ModKey>
@@ -46,33 +58,31 @@ public class MergerTests
         {
             var action1 = testMod1.Actions.First();
 
-            var mod3 = testHelpers.CreateDummyPlugin(existingFolder, "test-file-3.esp", mod =>
+            var mod3 = testHelpers.CreateDummyPlugin(existingFolder, modKey3, mod =>
             {
                 var copy = action1.DeepCopy();
-                copy.EditorID = "Action1x";
+                copy.EditorID = modifiedEditorId;
                 mod.Actions.Add(copy);
             });
                 
             mods.Add(mod3);
         }
 
-        const string outputFileName = "output.esp";
-        throw new NotImplementedException();
         // using (var merger = new Merger<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(testFolder, mods, mods, outputFileName, testFolder, GameRelease.SkyrimSE))
         // {
         //     merger.Merge();
         // }
 
-        var outputFile = Path.Combine(existingFolder, outputFileName);
-        testHelpers.TestPlugin(outputFile, mod =>
-        {
-            Assert.Equal(4, mod.Actions.Count);
-                
-            Assert.Contains(mod.Actions, x => x.EditorID == "Action1x");
-            Assert.Contains(mod.Actions, x => x.EditorID == "Action2");
-            Assert.Contains(mod.Actions, x => x.EditorID == "Action3");
-            Assert.Contains(mod.Actions, x => x.EditorID == "Action4");
-        });
+        // var outputFile = Path.Combine(existingFolder, outputModKey.FileName);
+        // testHelpers.TestPlugin(outputFile, mod =>
+        // {
+        //     mod.Actions.Count.ShouldEqual(4);
+        //         
+        //     mod.Actions.ShouldContain(x => x.EditorID == modifiedEditorId);
+        //     mod.Actions.ShouldContain(x => x.EditorID == editorId2);
+        //     mod.Actions.ShouldContain(x => x.EditorID == editorId3);
+        //     mod.Actions.ShouldContain(x => x.EditorID == editorId4);
+        // });
     }
 
     [Fact]

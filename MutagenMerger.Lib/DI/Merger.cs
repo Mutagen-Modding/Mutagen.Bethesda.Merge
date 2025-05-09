@@ -28,18 +28,15 @@ public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> :
 {
     private readonly IFileSystem _fileSystem;
     private readonly AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.Factory _assetMergeFactory;
-    private readonly IGameSpecifications<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> _gameSpecs;
     private readonly CopyRecordProcessor<TMod, TModGetter> _copyRecordProcessor;
 
     public Merger(
         IFileSystem fileSystem,
         AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.Factory assetMergeFactory,
-        IGameSpecifications<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> gameSpecs,
         CopyRecordProcessor<TMod, TModGetter> copyRecordProcessor)
     {
         _fileSystem = fileSystem;
         _assetMergeFactory = assetMergeFactory;
-        _gameSpecs = gameSpecs;
         _copyRecordProcessor = copyRecordProcessor;
     }
         
@@ -52,7 +49,7 @@ public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> :
     {
         var outputMod = ModInstantiator.Activator(outputKey, game) as TMod ?? throw new Exception("Could not instantiate mod");
         var env = GameEnvironmentBuilder<TMod,TModGetter>.Create(game).WithTargetDataFolder(dataFolderPath).WithOutputMod(outputMod).Build();
-        var mods = env.LoadOrder.PriorityOrder.Resolve().ToArray();
+        var mods = env.LoadOrder.PriorityOrder.ResolveAllModsExist().ToArray();
         var mergingMods = mods.Where(x => modsToMerge.Contains(x.ModKey)).ToArray();
 
         var outputFile = Path.Combine(outputFolder, outputKey.FileName);
