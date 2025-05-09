@@ -1,7 +1,4 @@
-﻿using System;
-using Mutagen.Bethesda;
-using Mutagen.Bethesda.Plugins.Cache;
-using Mutagen.Bethesda.Plugins.Records;
+﻿using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Skyrim;
 
 namespace MutagenMerger.Lib.DI.GameSpecifications.Skyrim;

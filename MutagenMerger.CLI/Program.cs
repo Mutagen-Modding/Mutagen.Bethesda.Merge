@@ -1,8 +1,4 @@
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Autofac;
 using CommandLine;
 using Mutagen.Bethesda;
@@ -13,56 +9,55 @@ using Mutagen.Bethesda.Skyrim;
 using MutagenMerger.CLI.Container;
 using MutagenMerger.Lib.DI;
 
-namespace MutagenMerger.CLI
+namespace MutagenMerger.CLI;
+
+public static class Program
 {
-    public static class Program
+    public static async Task Main(string[] args)
     {
-        public static async Task Main(string[] args)
+        await Parser.Default.ParseArguments<Options>(args)
+            .WithParsedAsync(Run);
+    }
+
+    private static async Task Run(Options options)
+    {
+        var modsToMerge = options.PluginsMergeTxt != string.Empty
+            ? (await File.ReadAllLinesAsync(options.PluginsMergeTxt))
+            .Select(x => ModKey.FromNameAndExtension(x))
+            .ToList()
+            : options.PluginsToMerge
+                .Select(x => ModKey.FromNameAndExtension(x))
+                .ToList();
+
+        if (Directory.Exists(options.Output)) Directory.Delete(options.Output, true);
+
+        var sw = new Stopwatch();
+        sw.Start();
+
+        Type[] genericTypes;
+        switch (options.Game.ToCategory())
         {
-            await Parser.Default.ParseArguments<Options>(args)
-                .WithParsedAsync(Run);
+            case GameCategory.Oblivion:
+                genericTypes = new Type[] { typeof(IOblivionModGetter), typeof(IOblivionMod), typeof(IOblivionMajorRecord), typeof(IOblivionMajorRecordGetter) };
+                break;
+            case GameCategory.Fallout4:
+                genericTypes = new Type[] { typeof(IFallout4ModGetter), typeof(IFallout4Mod), typeof(IFallout4MajorRecord), typeof(IFallout4MajorRecordGetter) };
+                break;
+            case GameCategory.Skyrim:
+            default:
+                genericTypes = new Type[] { typeof(ISkyrimModGetter), typeof(ISkyrimMod), typeof(ISkyrimMajorRecord), typeof(ISkyrimMajorRecordGetter) };
+                break;
         }
 
-        private static async Task Run(Options options)
-        {
-            var modsToMerge = options.PluginsMergeTxt != string.Empty
-                ? (await File.ReadAllLinesAsync(options.PluginsMergeTxt))
-                    .Select(x => ModKey.FromNameAndExtension(x))
-                    .ToList()
-                : options.PluginsToMerge
-                    .Select(x => ModKey.FromNameAndExtension(x))
-                    .ToList();
+        ContainerBuilder builder = new();
+        builder.RegisterModule<MainModule>();
+        var container = builder.Build();
+        var merger = container.Resolve(typeof(Merger<,,,>).MakeGenericType(genericTypes)) as IMerger;
 
-            if (Directory.Exists(options.Output)) Directory.Delete(options.Output, true);
+        merger!.Merge(options.DataFolder, modsToMerge,
+            ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game);
 
-            var sw = new Stopwatch();
-            sw.Start();
-
-            Type[] genericTypes;
-            switch (options.Game.ToCategory())
-            {
-                case GameCategory.Oblivion:
-                    genericTypes = new Type[] { typeof(IOblivionModGetter), typeof(IOblivionMod), typeof(IOblivionMajorRecord), typeof(IOblivionMajorRecordGetter) };
-                    break;
-                case GameCategory.Fallout4:
-                    genericTypes = new Type[] { typeof(IFallout4ModGetter), typeof(IFallout4Mod), typeof(IFallout4MajorRecord), typeof(IFallout4MajorRecordGetter) };
-                    break;
-                case GameCategory.Skyrim:
-                default:
-                    genericTypes = new Type[] { typeof(ISkyrimModGetter), typeof(ISkyrimMod), typeof(ISkyrimMajorRecord), typeof(ISkyrimMajorRecordGetter) };
-                    break;
-            }
-
-            ContainerBuilder builder = new();
-            builder.RegisterModule<MainModule>();
-            var container = builder.Build();
-            var merger = container.Resolve(typeof(Merger<,,,>).MakeGenericType(genericTypes)) as IMerger;
-
-            merger!.Merge(options.DataFolder, modsToMerge,
-                ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game);
-
-            Console.WriteLine($"Merged {modsToMerge.Count} plugins in {sw.ElapsedMilliseconds}ms");
-            sw.Stop();
-        }
+        Console.WriteLine($"Merged {modsToMerge.Count} plugins in {sw.ElapsedMilliseconds}ms");
+        sw.Stop();
     }
 }

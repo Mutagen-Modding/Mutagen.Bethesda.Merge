@@ -1,5 +1,4 @@
-﻿using System;
-using Mutagen.Bethesda.Plugins.Cache;
+﻿using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Oblivion;
 
 namespace MutagenMerger.Lib.DI.GameSpecifications.Oblivion;

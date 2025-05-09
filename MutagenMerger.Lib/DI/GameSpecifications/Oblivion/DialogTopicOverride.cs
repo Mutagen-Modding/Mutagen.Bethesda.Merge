@@ -1,5 +1,4 @@
-﻿using System;
-using Mutagen.Bethesda.Plugins;
+﻿using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Oblivion;
 using Mutagen.Bethesda.Plugins.Records;

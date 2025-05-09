@@ -1,13 +1,10 @@
-using System;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Records;
 using SkyrimRecord = Mutagen.Bethesda.Skyrim;
 using Fallout4Record = Mutagen.Bethesda.Fallout4;
 using OblivionRecord = Mutagen.Bethesda.Oblivion;
-using System.Collections.Generic;
 using Mutagen.Bethesda.Oblivion;
-using System.Linq;
 using Mutagen.Bethesda.Fallout4;
 using Mutagen.Bethesda.Skyrim;
 

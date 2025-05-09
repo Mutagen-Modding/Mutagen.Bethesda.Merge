@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Loqui;
+﻿using Loqui;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Records;
 using SkyrimRecord = Mutagen.Bethesda.Skyrim;
 using Fallout4Record = Mutagen.Bethesda.Fallout4;
-using OblivionRecord = Mutagen.Bethesda.Oblivion;
 using MutagenMerger.Lib.DI.GameSpecifications;
 using Noggog;
 

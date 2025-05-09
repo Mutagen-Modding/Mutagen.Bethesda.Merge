@@ -1,8 +1,5 @@
 ﻿using Autofac;
 using MutagenMerger.Lib.DI;
-using MutagenMerger.Lib.DI.GameSpecifications.Fallout4;
-using MutagenMerger.Lib.DI.GameSpecifications.Oblivion;
-using MutagenMerger.Lib.DI.GameSpecifications.Skyrim;
 using Noggog.Autofac;
 
 namespace MutagenMerger.CLI.Container;
