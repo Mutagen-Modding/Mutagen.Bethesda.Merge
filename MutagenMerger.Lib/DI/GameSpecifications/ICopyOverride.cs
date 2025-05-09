@@ -9,7 +9,7 @@ public interface ICopyOverride<TMod, TModGetter>
     where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
     where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
 {
-    ProtocolKey ProtocolKey { get; }
+    Type ClassType { get; }
     public void HandleCopyFor(
         MergeState<TMod, TModGetter> state,
         IModContext<TMod, TModGetter, IMajorRecord, IMajorRecordGetter> context);
@@ -21,7 +21,7 @@ public abstract class ACopyOverride<TMod, TModGetter, TMajorRecord, TMajorRecord
     where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
     where TMajorRecordGetter : class, IMajorRecordGetter
 {
-    public ProtocolKey ProtocolKey { get; } = LoquiRegistration.StaticRegister.GetRegister(typeof(TMajorRecord)).ProtocolKey;
+    public Type ClassType { get; } = LoquiRegistration.StaticRegister.GetRegister(typeof(TMajorRecord)).ClassType;
     
     public void HandleCopyFor(
         MergeState<TMod, TModGetter> state, 

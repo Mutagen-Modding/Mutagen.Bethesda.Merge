@@ -13,14 +13,14 @@ public class CopyRecordProcessor<TMod, TModGetter>
     where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
     where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
 {
-    private readonly Dictionary<ProtocolKey, ICopyOverride<TMod, TModGetter>> _copyOverrides;
+    private readonly Dictionary<Type, ICopyOverride<TMod, TModGetter>> _copyOverrides;
 
     public CopyRecordProcessor(ICopyOverride<TMod, TModGetter>[] copyOverrides)
     {
         _copyOverrides = copyOverrides
             // .GroupBy(x => x.ProtocolKey)
             // .ToDictionary(x => x.Key, x => x.First());
-        .ToDictionary(x => x.ProtocolKey, x => x);
+        .ToDictionary(x => x.ClassType, x => x);
     }
 
     public void CopyRecords(
@@ -30,7 +30,7 @@ public class CopyRecordProcessor<TMod, TModGetter>
                      .WinningContextOverrides<TMod, TModGetter, IMajorRecord, IMajorRecordGetter>(mergeState
                          .LinkCache))
         {
-            if (_copyOverrides.TryGetValue(rec.Record.Registration.ProtocolKey, out var copyOverride))
+            if (_copyOverrides.TryGetValue(rec.Record.Registration.ClassType, out var copyOverride))
             {
                 copyOverride.HandleCopyFor(mergeState, rec);
             }
