@@ -1,15 +1,16 @@
+using System.IO.Abstractions;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Records;
 using Mutagen.Bethesda.Archives;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Noggog;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Skyrim = Mutagen.Bethesda.Skyrim;
 using Fallout4 = Mutagen.Bethesda.Fallout4;
 using Oblivion = Mutagen.Bethesda.Oblivion;
 using Mutagen.Bethesda.Plugins.Masters;
 using Noggog.IO;
+using DirectoryInfoWrapper = Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoWrapper;
 
 namespace MutagenMerger.Lib;
 
@@ -19,6 +20,7 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
     where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
     where TMajorRecordGetter : class, IMajorRecordGetter
 {
+    private readonly IFileSystem _fileSystem;
     private readonly MergeState<TMod, TModGetter> _mergeState;
     private readonly string _outputDir;
     private readonly string _mergeName;
@@ -27,8 +29,11 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
     public delegate AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> Factory(
         MergeState<TMod, TModGetter> mergeState);
     
-    public AssetMerge(MergeState<TMod, TModGetter> mergeState)
+    public AssetMerge(
+        IFileSystem fileSystem,
+        MergeState<TMod, TModGetter> mergeState)
     {
+        _fileSystem = fileSystem;
         _mergeState = mergeState;
         _rules = GetRules();
         _outputDir = Path.GetDirectoryName(_mergeState.OutputPath) ?? "";
@@ -62,7 +67,7 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
         matcher.AddExcludePatterns(_rules);
         Parallel.ForEach(_mergeState.ModsToMerge, mod => {
             var bsaPattern = mod.FileName.NameWithoutExtension + "*." + (_mergeState.Release == GameRelease.Fallout4 ? "b2a" : "bsa");
-            string[] bsaFiles = Directory.GetFiles(_mergeState.DataPath, bsaPattern);
+            string[] bsaFiles = _fileSystem.Directory.GetFiles(_mergeState.DataPath, bsaPattern);
 
             // bsaFiles.ForEach(Console.WriteLine);
 
@@ -76,9 +81,9 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
         var matches = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(temp.Dir)));
 
         Parallel.ForEach(matches.Files, file => {
-            Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(_outputDir, file.Path)) ?? "");
+            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(_outputDir, file.Path)) ?? "");
             Console.WriteLine("            Copying extracted asset \"" + file.Path + "\"");
-            File.Copy(Path.Combine(temp.Dir, file.Path), Path.Combine(_outputDir, file.Path));
+            _fileSystem.File.Copy(Path.Combine(temp.Dir, file.Path), Path.Combine(_outputDir, file.Path));
         });
 
         foreach (var mod in _mergeState.ModsToMerge)
@@ -103,8 +108,8 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
             Buffer.BlockCopy(BitConverter.GetBytes(formIds[i]), 0, buffer, i * 4, 4);
         }
         if (!BitConverter.IsLittleEndian) Array.Reverse(buffer);
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath) ?? "");
-        File.WriteAllBytes(filePath, buffer);
+        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath) ?? "");
+        _fileSystem.File.WriteAllBytes(filePath, buffer);
         Console.WriteLine();
         Console.WriteLine("          Created SEQ file: " + fileName);
 
@@ -169,7 +174,7 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
         Parallel.For(0,files.Count(), i => {
             var file = files[i];
             var filePath = file.Path.Replace("\\", "/").ToLower();
-            Directory.CreateDirectory(Path.Combine(temp, Path.GetDirectoryName(filePath) ?? ""));
+            _fileSystem.Directory.CreateDirectory(Path.Combine(temp, Path.GetDirectoryName(filePath) ?? ""));
             Console.SetCursorPosition(0, Console.CursorTop);
             Console.Write("          Extracting Archive \"" + Path.GetFileName(bsa) + "\" " + ((decimal)i / files.Count()).ToString("0.00%"));
             File.WriteAllBytes(Path.Combine(temp, filePath), file.GetBytes());
@@ -184,18 +189,18 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
         var srcPath = Path.Combine(dir, path);
         var dstPath = Path.Combine(_outputDir, path);
 
-        if (!Directory.Exists(srcPath)) return;
+        if (!_fileSystem.Directory.Exists(srcPath)) return;
 
-        foreach (var file in Directory.GetFiles(srcPath,
+        foreach (var file in _fileSystem.Directory.GetFiles(srcPath,
                      mod.Name.ToLower() + "_*.txt",
                      new EnumerationOptions() { RecurseSubdirectories = true, MatchCasing = MatchCasing.CaseInsensitive }))
         {
             var language = Path.GetFileNameWithoutExtension(file).Replace(mod.Name.ToLower() + "_", "");
             var dst = dstPath + _mergeName.Substring(0, _mergeName.Length - 4) + "_" + language + ".txt";
-            Directory.CreateDirectory(dstPath);
+            _fileSystem.Directory.CreateDirectory(dstPath);
 
-            var writer = File.AppendText(dst);
-            writer.Write(File.ReadAllText(file));
+            var writer = _fileSystem.File.AppendText(dst);
+            writer.Write(_fileSystem.File.ReadAllText(file));
             writer.Close();
 
             Console.WriteLine("          Appending " + mod.Name.ToLower() + "_" + "language to " + _mergeName.Substring(0, _mergeName.Length - 4) + "_" + language);
@@ -210,9 +215,9 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
 
         var srcPath = Path.Combine(dir, path, mod.FileName.String.ToLower());
         var dstPath = Path.Combine(_outputDir, path, _mergeName);
-        Directory.CreateDirectory(dstPath);
+        _fileSystem.Directory.CreateDirectory(dstPath);
 
-        if (!Directory.Exists(srcPath)) return;
+        if (!_fileSystem.Directory.Exists(srcPath)) return;
 
         Console.WriteLine("          Copying assets from directory \"" + Path.Combine(path, mod.FileName.String.ToLower()) + "\"");
         Console.WriteLine("          Copying assets to directory \"" + Path.Combine(path, _mergeName) + "\"");
@@ -222,7 +227,7 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
             var srcId = x.Key.ID;
             var srcIdString = x.Key.IDString().ToLower();
 
-            foreach (var file in Directory.GetFiles(srcPath,
+            foreach (var file in _fileSystem.Directory.GetFiles(srcPath,
                          "*" + srcIdString + "*",
                          new EnumerationOptions() { RecurseSubdirectories = true, MatchCasing = MatchCasing.CaseInsensitive }))
             {
@@ -230,17 +235,17 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
                 {
                     var newId = "00" + _mergeState.Mapping[new FormKey(mod, srcId)].IDString().ToLower();
                     var dstFile = file.Replace(srcIdString, newId).Replace(srcPath, dstPath);
-                    Directory.CreateDirectory(Path.GetDirectoryName(dstFile) ?? "");
+                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(dstFile) ?? "");
                     Console.WriteLine("            Asset renumbered from " + srcIdString + " to " + newId);
                     Console.WriteLine("            Copying asset \"" + file.Replace(srcPath + "/", "") + "\" to \"" + dstFile.Replace(dstPath + "/", "") + "\"");
-                    File.Copy(file, dstFile);
+                    _fileSystem.File.Copy(file, dstFile);
                 }
                 else
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(file.Replace(srcPath, dstPath)) ?? "");
+                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(file.Replace(srcPath, dstPath)) ?? "");
                     Console.WriteLine("            Asset not renumbered.");
                     Console.WriteLine("            Copying asset \"" + file.Replace(srcPath + "/", "") + "\"");
-                    File.Copy(file, file.Replace(srcPath, dstPath));
+                    _fileSystem.File.Copy(file, file.Replace(srcPath, dstPath));
 
                 }
 
