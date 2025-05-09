@@ -8,7 +8,6 @@
     <ItemGroup>
       <PackageReference Include="CommandLineParser" />
       <PackageReference Include="Mutagen.Bethesda" />
-      <PackageReference Include="Noggog.Autofac" />
     </ItemGroup>
 
     <ItemGroup>

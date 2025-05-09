@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+      <PackageReference Include="Noggog.Autofac" />
     <PackageReference Include="DotNet.Glob" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Mono.TextTemplating" />

@@ -3,7 +3,6 @@ using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 using Noggog;
 using Shouldly;
-using Xunit;
 
 namespace MutagenMerger.Tests;
 

@@ -6,7 +6,6 @@ using Mutagen.Bethesda.Fallout4;
 using Mutagen.Bethesda.Oblivion;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
-using MutagenMerger.CLI.Container;
 using MutagenMerger.Lib.DI;
 
 namespace MutagenMerger.CLI;
@@ -38,14 +37,14 @@ public static class Program
         switch (options.Game.ToCategory())
         {
             case GameCategory.Oblivion:
-                genericTypes = new Type[] { typeof(IOblivionModGetter), typeof(IOblivionMod), typeof(IOblivionMajorRecord), typeof(IOblivionMajorRecordGetter) };
+                genericTypes = new Type[] { typeof(IOblivionMod), typeof(IOblivionModGetter),typeof(IOblivionMajorRecord), typeof(IOblivionMajorRecordGetter) };
                 break;
             case GameCategory.Fallout4:
-                genericTypes = new Type[] { typeof(IFallout4ModGetter), typeof(IFallout4Mod), typeof(IFallout4MajorRecord), typeof(IFallout4MajorRecordGetter) };
+                genericTypes = new Type[] { typeof(IFallout4Mod), typeof(IFallout4ModGetter), typeof(IFallout4MajorRecord), typeof(IFallout4MajorRecordGetter) };
                 break;
             case GameCategory.Skyrim:
             default:
-                genericTypes = new Type[] { typeof(ISkyrimModGetter), typeof(ISkyrimMod), typeof(ISkyrimMajorRecord), typeof(ISkyrimMajorRecordGetter) };
+                genericTypes = new Type[] { typeof(ISkyrimMod), typeof(ISkyrimModGetter), typeof(ISkyrimMajorRecord), typeof(ISkyrimMajorRecordGetter) };
                 break;
         }
 

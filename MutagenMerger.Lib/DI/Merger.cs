@@ -4,7 +4,6 @@ using Mutagen.Bethesda;
 using Mutagen.Bethesda.Environments;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Records;
-using MutagenMerger.Lib.DI.GameSpecifications;
 using Noggog;
 using System.Security.Cryptography;
 
@@ -20,19 +19,19 @@ public interface IMerger
         GameRelease game);
 }
 
-public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> : IMerger
-    where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
+public sealed class Merger<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> : IMerger
     where TMod : class, TModGetter, IMod, IContextMod<TMod, TModGetter>
+    where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
     where TMajorRecord : class, TMajorRecordGetter, IMajorRecord
     where TMajorRecordGetter : class, IMajorRecordGetter
 {
     private readonly IFileSystem _fileSystem;
-    private readonly AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.Factory _assetMergeFactory;
+    private readonly AssetMerge<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>.Factory _assetMergeFactory;
     private readonly CopyRecordProcessor<TMod, TModGetter> _copyRecordProcessor;
 
     public Merger(
         IFileSystem fileSystem,
-        AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>.Factory assetMergeFactory,
+        AssetMerge<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>.Factory assetMergeFactory,
         CopyRecordProcessor<TMod, TModGetter> copyRecordProcessor)
     {
         _fileSystem = fileSystem;
@@ -81,6 +80,7 @@ public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> :
             .ToPath(state.OutputPath)
             .WithLoadOrder(env.LoadOrder.Keys)
             .WithDataFolder(env.DataFolderPath)
+            .WithFileSystem(_fileSystem)
             .Write();
 
         // foreach (var rec in state.OutgoingMod.EnumerateMajorRecords())

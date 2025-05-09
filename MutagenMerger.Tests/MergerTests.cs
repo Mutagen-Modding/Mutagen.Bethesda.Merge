@@ -1,8 +1,10 @@
 ﻿using System.IO.Abstractions;
+using Autofac;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 using Mutagen.Bethesda.Testing.AutoData;
+using MutagenMerger.Lib;
 using MutagenMerger.Lib.DI;
 using Noggog;
 using Noggog.Testing.Extensions;
@@ -16,6 +18,23 @@ public class MergerTests
     public MergerTests()
     {
         Warmup.Init();
+    }
+
+    public class TestModule : Module
+    {
+        private readonly IFileSystem _fileSystem;
+
+        public TestModule(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+        
+        protected override void Load(ContainerBuilder builder)
+        {
+            builder.RegisterInstance(_fileSystem).As<IFileSystem>()
+                .SingleInstance();
+            builder.RegisterModule<MergerModule>();
+        }
     }
         
     [Theory, MutagenAutoData]
@@ -31,7 +50,8 @@ public class MergerTests
         string editorId3,
         string editorId4,
         string modifiedEditorId,
-        ModKey outputModKey)
+        ModKey outputModKey,
+        TestModule testModule)
     {
         var mod1 = testHelpers.CreateDummyPlugin(existingFolder, modKey1, mod =>
         {
@@ -68,21 +88,28 @@ public class MergerTests
             mods.Add(mod3);
         }
 
-        // using (var merger = new Merger<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(testFolder, mods, mods, outputFileName, testFolder, GameRelease.SkyrimSE))
-        // {
-        //     merger.Merge();
-        // }
+        var container = new ContainerBuilder();
+        container.RegisterModule(testModule);
+        var builder = container.Build();
+        var sut = builder.Resolve<Merger<ISkyrimMod, ISkyrimModGetter, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>>();
+        
+        sut.Merge(
+            dataFolderPath: existingFolder,
+            modsToMerge: mods,
+            outputKey: outputModKey,
+            outputFolder: existingFolder,
+            game: GameRelease.SkyrimSE);
 
-        // var outputFile = Path.Combine(existingFolder, outputModKey.FileName);
-        // testHelpers.TestPlugin(outputFile, mod =>
-        // {
-        //     mod.Actions.Count.ShouldEqual(4);
-        //         
-        //     mod.Actions.ShouldContain(x => x.EditorID == modifiedEditorId);
-        //     mod.Actions.ShouldContain(x => x.EditorID == editorId2);
-        //     mod.Actions.ShouldContain(x => x.EditorID == editorId3);
-        //     mod.Actions.ShouldContain(x => x.EditorID == editorId4);
-        // });
+        var outputFile = Path.Combine(existingFolder, outputModKey.FileName);
+        testHelpers.TestPlugin(outputFile, mod =>
+        {
+            mod.Actions.Count.ShouldEqual(4);
+                
+            mod.Actions.ShouldContain(x => x.EditorID == modifiedEditorId);
+            mod.Actions.ShouldContain(x => x.EditorID == editorId2);
+            mod.Actions.ShouldContain(x => x.EditorID == editorId3);
+            mod.Actions.ShouldContain(x => x.EditorID == editorId4);
+        });
     }
 
     [Fact]

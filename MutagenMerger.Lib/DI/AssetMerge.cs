@@ -1,20 +1,20 @@
 using System.IO.Abstractions;
-using Mutagen.Bethesda;
-using Mutagen.Bethesda.Plugins;
-using Mutagen.Bethesda.Plugins.Records;
-using Mutagen.Bethesda.Archives;
 using Microsoft.Extensions.FileSystemGlobbing;
+using Mutagen.Bethesda;
+using Mutagen.Bethesda.Archives;
+using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Plugins.Masters;
+using Mutagen.Bethesda.Plugins.Records;
 using Noggog;
+using Noggog.IO;
 using Skyrim = Mutagen.Bethesda.Skyrim;
 using Fallout4 = Mutagen.Bethesda.Fallout4;
 using Oblivion = Mutagen.Bethesda.Oblivion;
-using Mutagen.Bethesda.Plugins.Masters;
-using Noggog.IO;
 using DirectoryInfoWrapper = Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoWrapper;
 
-namespace MutagenMerger.Lib;
+namespace MutagenMerger.Lib.DI;
 
-public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
+public class AssetMerge<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>
     where TModGetter : class, IModGetter, IMajorRecordContextEnumerable<TMod, TModGetter>, IMajorRecordGetterEnumerable, IContextGetterMod<TMod, TModGetter>
     where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
     where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
@@ -26,12 +26,12 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
     private readonly string _mergeName;
     private readonly List<string> _rules;
 
-    public delegate AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> Factory(
+    public delegate AssetMerge<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> Factory(
         MergeState<TMod, TModGetter> mergeState);
     
     public AssetMerge(
-        IFileSystem fileSystem,
-        MergeState<TMod, TModGetter> mergeState)
+        MergeState<TMod, TModGetter> mergeState,
+        IFileSystem fileSystem)
     {
         _fileSystem = fileSystem;
         _mergeState = mergeState;
@@ -124,7 +124,10 @@ public class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGetter>
 
     private List<UInt32> GetSeqQuests(TMod merge)
     {
-        var masterColl = MasterReferenceCollection.FromPath(Path.Combine(_outputDir, _mergeName), _mergeState.Release);
+        var masterColl = MasterReferenceCollection.FromPath(
+            Path.Combine(_outputDir, _mergeName), 
+            _mergeState.Release,
+            _fileSystem);
 
         IGroup quests = _mergeState.Release switch
         {
