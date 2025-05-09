@@ -9,6 +9,8 @@ ProjectSection(SolutionItems) = preProject
 	.editorconfig = .editorconfig
 	.gitattributes = .gitattributes
 	.gitignore = .gitignore
+	Directory.Packages.props = Directory.Packages.props
+	Directory.Build.props = Directory.Build.props
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MutagenMerger.Tests", "MutagenMerger.Tests\MutagenMerger.Tests.csproj", "{B5E60238-BEAF-4E63-8EDE-BE5A3443B64A}"

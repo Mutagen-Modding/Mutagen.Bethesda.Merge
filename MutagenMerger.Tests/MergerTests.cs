@@ -2,7 +2,9 @@
 using System.IO;
 using System.Linq;
 using Mutagen.Bethesda;
+using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
+using MutagenMerger.Lib.DI;
 using Xunit;
 
 namespace MutagenMerger.Tests
@@ -55,7 +57,7 @@ namespace MutagenMerger.Tests
             }
 
             const string outputFileName = "output.esp";
-            using (var merger = new Merger(testFolder, mods, mods, outputFileName, testFolder, GameRelease.SkyrimSE))
+            using (var merger = new Merger<,,,>(testFolder, mods, mods, outputFileName, testFolder, GameRelease.SkyrimSE))
             {
                 merger.Merge();
             }

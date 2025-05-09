@@ -2,14 +2,13 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFrameworks>net7.0</TargetFrameworks>
-        <Nullable>enable</Nullable>
+        <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CommandLineParser" Version="2.8.0" />
-      <PackageReference Include="Mutagen.Bethesda" Version="0.43.3" />
-      <PackageReference Include="Noggog.Autofac" Version="2.64.0" />
+      <PackageReference Include="CommandLineParser" />
+      <PackageReference Include="Mutagen.Bethesda" />
+      <PackageReference Include="Noggog.Autofac" />
     </ItemGroup>
 
     <ItemGroup>

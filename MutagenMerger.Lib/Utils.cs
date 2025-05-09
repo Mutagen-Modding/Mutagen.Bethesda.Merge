@@ -6,7 +6,7 @@ namespace MutagenMerger.Lib
 {
     public static class Utils
     {
-        public static BinaryWriteParameters SafeBinaryWriteParameters (IEnumerable<ModKey> loadOrder) => new()
+        public static BinaryWriteParameters SafeBinaryWriteParameters(IEnumerable<ModKey> loadOrder) => new()
         {
                 MasterFlag = MasterFlagOption.ChangeToMatchModKey,
                 ModKey = ModKeyOption.CorrectToPath,
