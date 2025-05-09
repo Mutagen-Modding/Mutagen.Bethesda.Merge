@@ -12,7 +12,8 @@ namespace MutagenMerger.Lib.DI.GameSpecifications.Base;
 
 public class CellOverride
 {
-    public static IMajorRecord CopyCellAsOverride<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state,
+    public static IMajorRecord CopyCellAsOverride<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(
+        MergeState<TMod, TModGetter> state,
         IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context)
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
@@ -49,9 +50,10 @@ public class CellOverride
     }
 
 
-    public static IMajorRecord DuplicateCell<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state,
-        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context, MajorRecord.TranslationMask mask)
-
+    public static IMajorRecord DuplicateCell<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(
+        MergeState<TMod, TModGetter> state,
+        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context,
+        MajorRecord.TranslationMask mask)
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
         where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
@@ -70,7 +72,6 @@ public class CellOverride
         MergeState<TMod, TModGetter> state,
         IMajorRecord newRecord,
         IMajorRecordGetter temp)
-
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
     {
@@ -95,9 +96,10 @@ public class CellOverride
 
     }
 
-    public static void CopySubRecords<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context, IMajorRecord newRecord)
-
-
+    public static void CopySubRecords<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(
+        MergeState<TMod, TModGetter> state,
+        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context,
+        IMajorRecord newRecord)
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
         where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
@@ -129,9 +131,10 @@ public class CellOverride
     }
 
 
-    private static void CopyNavmesh<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context, IMajorRecord newRecord)
-
-
+    private static void CopyNavmesh<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(
+        MergeState<TMod, TModGetter> state,
+        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context,
+        IMajorRecord newRecord)
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
         where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
@@ -169,9 +172,10 @@ public class CellOverride
     }
 
 
-    private static void CopyLandscape<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context, IMajorRecord newRecord)
-
-
+    private static void CopyLandscape<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(
+        MergeState<TMod, TModGetter> state,
+        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context,
+        IMajorRecord newRecord)
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
         where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
@@ -218,13 +222,12 @@ public class CellOverride
             Console.WriteLine("            Copying Child [" + originalLandscape.FormKey.ModKey.Name + "] " + originalLandscape.FormKey.IDString() + " to [" + landscape.FormKey.ModKey.Name + "] " + landscape.FormKey.IDString());
 
         }
-
     }
-
-
-    private static void CopyPathing<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context, IMajorRecord newRecord)
-
-
+    
+    private static void CopyPathing<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(
+        MergeState<TMod, TModGetter> state,
+        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context,
+        IMajorRecord newRecord)
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
         where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
@@ -259,20 +262,17 @@ public class CellOverride
             Console.WriteLine("            Copying Child [" + originalPathing.FormKey.ModKey.Name + "] " + originalPathing.FormKey.IDString() + " to [" + pathing.FormKey.ModKey.Name + "] " + pathing.FormKey.IDString());
 
         }
-
     }
-
-
-
-    private static void CopyPersistent<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context, IMajorRecord newRecord)
-
-
+    
+    private static void CopyPersistent<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(
+        MergeState<TMod, TModGetter> state,
+        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context,
+        IMajorRecord newRecord)
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
         where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
         where TMajorRecordGetter : class, IMajorRecordGetter
     {
-
         IReadOnlyList<IMajorRecordGetter> list =
             state.Release == GameRelease.Oblivion ? ((OblivionRecord.ICellGetter)context.Record).Persistent :
             state.Release == GameRelease.Fallout4 ? ((Fallout4Record.ICellGetter)context.Record).Persistent :
@@ -293,8 +293,7 @@ public class CellOverride
 
                 state.Mapping.Add(pers.FormKey, newPersistent.FormKey);
             }
-
-
+            
             switch (state.Release)
             {
                 case GameRelease.Oblivion:
@@ -309,20 +308,18 @@ public class CellOverride
             }
 
             Console.WriteLine("            Copying Child [" + pers.FormKey.ModKey.Name + "] " + pers.FormKey.IDString() + " to [" + newPersistent.FormKey.ModKey.Name + "] " + newPersistent.FormKey.IDString());
-
         }
     }
-
-
-    private static void CopyTemporary<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context, IMajorRecord newRecord)
-
-
+    
+    private static void CopyTemporary<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(
+        MergeState<TMod, TModGetter> state,
+        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context,
+        IMajorRecord newRecord)
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
         where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
         where TMajorRecordGetter : class, IMajorRecordGetter
     {
-
         IReadOnlyList<IMajorRecordGetter> list =
             state.Release == GameRelease.Oblivion ? ((OblivionRecord.ICellGetter)context.Record).Temporary :
             state.Release == GameRelease.Fallout4 ? ((Fallout4Record.ICellGetter)context.Record).Temporary :
@@ -361,15 +358,16 @@ public class CellOverride
 
         }
     }
-    private static void CopyDistance<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(MergeState<TMod, TModGetter> state, IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context, IMajorRecord newRecord)
 
-
-            where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
-            where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
-            where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
-            where TMajorRecordGetter : class, IMajorRecordGetter
+    private static void CopyDistance<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>(
+        MergeState<TMod, TModGetter> state,
+        IModContext<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> context,
+        IMajorRecord newRecord)
+        where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
+        where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
+        where TMajorRecord : class, IMajorRecord, TMajorRecordGetter
+        where TMajorRecordGetter : class, IMajorRecordGetter
     {
-
         IReadOnlyList<OblivionRecord.IPlacedGetter> list = ((OblivionRecord.ICellGetter)context.Record).VisibleWhenDistant;
         foreach (var vis in list)
         {
@@ -383,18 +381,13 @@ public class CellOverride
             }
             else
             {
-
                 newVis = (OblivionRecord.IPlaced)vis.Duplicate(state.GetFormKey(vis.FormKey));
-
                 state.Mapping.Add(vis.FormKey, newVis.FormKey);
-
             }
 
             ((OblivionRecord.Cell)newRecord).Temporary.Add(newVis);
 
             Console.WriteLine("            Copying Child [" + vis.FormKey.ModKey.Name + "] " + vis.FormKey.IDString() + " to [" + newVis.FormKey.ModKey.Name + "] " + newVis.FormKey.IDString());
-
         }
     }
-
 }

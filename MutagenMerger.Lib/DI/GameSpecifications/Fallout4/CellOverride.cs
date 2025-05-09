@@ -29,7 +29,6 @@ public class CellOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, ICel
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
             newRecord = Base.CellOverride.CopyCellAsOverride(state, context);
-
         }
         else
         {
