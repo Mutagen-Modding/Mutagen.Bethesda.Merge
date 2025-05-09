@@ -6,26 +6,25 @@ namespace MutagenMerger.Lib.DI.GameSpecifications.Fallout4;
 
 public class QuestOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, IQuest, IQuestGetter>
 {
-    public static readonly Quest.TranslationMask QuestMask = new Quest.TranslationMask(defaultOn: true)
+    private static readonly Quest.TranslationMask QuestMask = new(defaultOn: true)
     {
         DialogTopics = false
     };
-    public static readonly DialogTopic.TranslationMask DialogTopicMask = new DialogTopic.TranslationMask(defaultOn: true)
+
+    private static readonly DialogTopic.TranslationMask DialogTopicMask = new(defaultOn: true)
     {
         Responses = false
     };
+    
     public override void HandleCopyFor(
         MergeState<IFallout4Mod, IFallout4ModGetter> state,
         IModContext<IFallout4Mod, IFallout4ModGetter, IQuest, IQuestGetter> context)
     {
-
         IQuest? newRecord;
-
-
+        
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
             newRecord = context.GetOrAddAsOverride(state.OutgoingMod);
-
         }
         else
         {
@@ -48,20 +47,18 @@ public class QuestOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, IQu
             {
                 Base.DialogTopicOverride.CopyDialogResponses(state, context.ModKey, newTopic, response);
             }
-
         }
 
         foreach (var branch in context.Record.DialogBranches)
         {
-
             DialogBranch newBranch;
             if (state.IsOverride(branch.FormKey, context.ModKey))
             {
-                newBranch = (DialogBranch)branch.DeepCopy();
+                newBranch = branch.DeepCopy();
             }
             else
             {
-                newBranch = (DialogBranch)branch.Duplicate(state.GetFormKey(branch.FormKey));
+                newBranch = branch.Duplicate(state.GetFormKey(branch.FormKey));
             }
             state.Mapping.Add(branch.FormKey, newBranch.FormKey);
 
@@ -70,5 +67,4 @@ public class QuestOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, IQu
             Console.WriteLine("          Deep Copying [" + branch.FormKey.ModKey.Name + "] " + branch.FormKey.IDString() + " to [" + newBranch.FormKey.ModKey.Name + "] " + newBranch.FormKey.IDString());
         }
     }
-
 }

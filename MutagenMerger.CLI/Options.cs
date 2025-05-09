@@ -5,7 +5,6 @@ namespace MutagenMerger.CLI;
 
 public class Options
 {
-        
     [Option("game", HelpText = "Game to mod (Default SkyrimSE)")]
     public GameRelease Game { get; set; } = GameRelease.SkyrimSE;
 
@@ -13,7 +12,7 @@ public class Options
     public string DataFolder { get; set; } = string.Empty;
         
     [Option("merge", Min = 1, Max = 4096, HelpText = "Plugins to merge")]
-    public IEnumerable<string> PluginsToMerge { get; set; } = Array.Empty<string>();
+    public IEnumerable<string> PluginsToMerge { get; set; } = [];
 
     [Option("mergefile", HelpText = "Get plugins to merge from file")]
     public string PluginsMergeTxt { get; set; } = string.Empty;

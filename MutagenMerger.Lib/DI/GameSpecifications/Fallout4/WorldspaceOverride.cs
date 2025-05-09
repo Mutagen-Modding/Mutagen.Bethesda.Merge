@@ -5,7 +5,7 @@ namespace MutagenMerger.Lib.DI.GameSpecifications.Fallout4;
 
 public class WorldspaceOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, IWorldspace, IWorldspaceGetter>
 {
-    private static readonly Worldspace.TranslationMask WorldspaceMask = new Mutagen.Bethesda.Fallout4.Worldspace.TranslationMask(defaultOn: true)
+    private static readonly Worldspace.TranslationMask WorldspaceMask = new(defaultOn: true)
     {
         SubCells = false,
         TopCell = false,
@@ -19,10 +19,9 @@ public class WorldspaceOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter
         MergeState<IFallout4Mod, IFallout4ModGetter> state,
         IModContext<IFallout4Mod, IFallout4ModGetter, IWorldspace, IWorldspaceGetter> context)
     {
-        Mutagen.Bethesda.Fallout4.Worldspace newRecord;
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (Mutagen.Bethesda.Fallout4.Worldspace)context.GetOrAddAsOverride(state.OutgoingMod);
+            var newRecord = (Mutagen.Bethesda.Fallout4.Worldspace)context.GetOrAddAsOverride(state.OutgoingMod);
             // Readd branches below
             newRecord.LargeReferences.Clear();
             newRecord.SubCells.Clear();
@@ -33,7 +32,7 @@ public class WorldspaceOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter
         else
         {
             // Don't duplicate branches, as they will be added below
-            newRecord = (Mutagen.Bethesda.Fallout4.Worldspace)context.Record.Duplicate(state.GetFormKey(context.Record.FormKey));
+            var newRecord = (Mutagen.Bethesda.Fallout4.Worldspace)context.Record.Duplicate(state.GetFormKey(context.Record.FormKey));
 
             state.OutgoingMod.Worldspaces.Add(newRecord);
             
@@ -41,8 +40,5 @@ public class WorldspaceOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter
             
             Console.WriteLine("          Deep Copying [" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
         }
-
-
-        
-        }
+    }
 }

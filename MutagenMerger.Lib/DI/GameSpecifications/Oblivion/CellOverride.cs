@@ -1,11 +1,12 @@
 ﻿using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Oblivion;
+using Mutagen.Bethesda.Plugins.Records;
 
 namespace MutagenMerger.Lib.DI.GameSpecifications.Oblivion;
 
 public class CellOverride : ACopyOverride<IOblivionMod, IOblivionModGetter, ICell, ICellGetter>
 {
-    public static readonly Cell.TranslationMask CellMask = new Mutagen.Bethesda.Oblivion.Cell.TranslationMask(defaultOn: true)
+    public static readonly Cell.TranslationMask CellMask = new(defaultOn: true)
     {
         Persistent = false,
         Temporary = false,
@@ -16,26 +17,23 @@ public class CellOverride : ACopyOverride<IOblivionMod, IOblivionModGetter, ICel
         PersistentTimestamp = false,
         TemporaryTimestamp = false,
     };
+    
     public override void HandleCopyFor(
         MergeState<IOblivionMod, IOblivionModGetter> state,
         IModContext<IOblivionMod, IOblivionModGetter, ICell, ICellGetter> context)
     {
-
-        Mutagen.Bethesda.Oblivion.Cell? newRecord;
-
+        IMajorRecord? newRecord;
 
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (Mutagen.Bethesda.Oblivion.Cell)Base.CellOverride.CopyCellAsOverride(state, context);
-
+            newRecord = Base.CellOverride.CopyCellAsOverride(state, context);
         }
         else
         {
             // Don't duplicate branches, as they will be added below
-            newRecord = (Mutagen.Bethesda.Oblivion.Cell)Base.CellOverride.DuplicateCell(state, context, CellMask);
+            newRecord = Base.CellOverride.DuplicateCell(state, context, CellMask);
         }
 
         Base.CellOverride.CopySubRecords(state, context, newRecord);
     }
-
 }

@@ -1,11 +1,12 @@
 ﻿using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Oblivion;
+using Mutagen.Bethesda.Plugins.Records;
 
 namespace MutagenMerger.Lib.DI.GameSpecifications.Oblivion;
 
 public class WorldspaceOverride : ACopyOverride<IOblivionMod, IOblivionModGetter, IWorldspace, IWorldspaceGetter>
 {
-    private static readonly Worldspace.TranslationMask WorldspaceMask = new Mutagen.Bethesda.Oblivion.Worldspace.TranslationMask(defaultOn: true)
+    private static readonly Worldspace.TranslationMask WorldspaceMask = new(defaultOn: true)
     {
         SubCells = false,
         TopCell = false,
@@ -17,10 +18,10 @@ public class WorldspaceOverride : ACopyOverride<IOblivionMod, IOblivionModGetter
         MergeState<IOblivionMod, IOblivionModGetter> state,
         IModContext<IOblivionMod, IOblivionModGetter, IWorldspace, IWorldspaceGetter> context)
     {
-        Mutagen.Bethesda.Oblivion.Worldspace newRecord;
+        Worldspace newRecord;
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (Mutagen.Bethesda.Oblivion.Worldspace)context.GetOrAddAsOverride(state.OutgoingMod);
+            newRecord = (Worldspace)context.GetOrAddAsOverride(state.OutgoingMod);
             // Readd branches below
             newRecord.SubCells.Clear();
             newRecord.TopCell?.Clear();
@@ -38,8 +39,5 @@ public class WorldspaceOverride : ACopyOverride<IOblivionMod, IOblivionModGetter
             
             Console.WriteLine("          Deep Copying [" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
         }
-
-
-        
-        }
+    }
 }

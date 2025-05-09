@@ -34,5 +34,4 @@ public record MergeState<TMod, TModGetter>(
             return FormKey.Factory(key.IDString() + ":" + OutgoingMod.ModKey.FileName);
         }
     }
-    
 }

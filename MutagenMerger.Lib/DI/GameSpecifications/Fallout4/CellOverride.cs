@@ -1,11 +1,12 @@
 ﻿using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Fallout4;
+using Mutagen.Bethesda.Plugins.Records;
 
 namespace MutagenMerger.Lib.DI.GameSpecifications.Fallout4;
 
 public class CellOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, ICell, ICellGetter>
 {
-    public static readonly Cell.TranslationMask CellMask = new Mutagen.Bethesda.Fallout4.Cell.TranslationMask(defaultOn: true)
+    private static readonly Cell.TranslationMask CellMask = new(defaultOn: true)
     {
         Persistent = false,
         Temporary = false,
@@ -18,26 +19,24 @@ public class CellOverride : ACopyOverride<IFallout4Mod, IFallout4ModGetter, ICel
         PersistentUnknownGroupData = false,
         TemporaryUnknownGroupData = false,
     };
+    
     public override void HandleCopyFor(
         MergeState<IFallout4Mod, IFallout4ModGetter> state,
         IModContext<IFallout4Mod, IFallout4ModGetter, ICell, ICellGetter> context)
     {
-
-        Mutagen.Bethesda.Fallout4.Cell? newRecord;
-
-
+        IMajorRecord? newRecord;
+        
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (Mutagen.Bethesda.Fallout4.Cell)Base.CellOverride.CopyCellAsOverride(state, context);
+            newRecord = Base.CellOverride.CopyCellAsOverride(state, context);
 
         }
         else
         {
             // Don't duplicate branches, as they will be added below
-            newRecord = (Mutagen.Bethesda.Fallout4.Cell)Base.CellOverride.DuplicateCell(state, context, CellMask);
+            newRecord = Base.CellOverride.DuplicateCell(state, context, CellMask);
         }
 
         Base.CellOverride.CopySubRecords(state, context, newRecord);
     }
-
 }

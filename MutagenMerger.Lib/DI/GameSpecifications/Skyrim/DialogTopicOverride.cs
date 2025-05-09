@@ -6,7 +6,7 @@ namespace MutagenMerger.Lib.DI.GameSpecifications.Skyrim;
 
 public class DialogTopicOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, IDialogTopic, IDialogTopicGetter>
 {
-    private static readonly DialogTopic.TranslationMask DialogTopicMask = new Mutagen.Bethesda.Skyrim.DialogTopic.TranslationMask(defaultOn: true)
+    private static readonly DialogTopic.TranslationMask DialogTopicMask = new(defaultOn: true)
     {
         Responses = false
     };
@@ -15,14 +15,14 @@ public class DialogTopicOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, I
         MergeState<ISkyrimMod, ISkyrimModGetter> state,
         IModContext<ISkyrimMod, ISkyrimModGetter, IDialogTopic, IDialogTopicGetter> context)
     {
-        Mutagen.Bethesda.Skyrim.DialogTopic newRecord;
+        IMajorRecord newRecord;
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (DialogTopic)Base.DialogTopicOverride.CopyDialogTopicAsOverride(state, (IMajorRecordGetter)context.Record);
+            newRecord = Base.DialogTopicOverride.CopyDialogTopicAsOverride(state, (IMajorRecordGetter)context.Record);
         }
         else
         {
-            newRecord = (DialogTopic)Base.DialogTopicOverride.DuplicateDialogTopic(state, (IMajorRecordGetter)context.Record, DialogTopicMask);
+            newRecord = Base.DialogTopicOverride.DuplicateDialogTopic(state, (IMajorRecordGetter)context.Record, DialogTopicMask);
         }
 
         // Do the branches
@@ -31,5 +31,4 @@ public class DialogTopicOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, I
             Base.DialogTopicOverride.CopyDialogResponses(state, context.ModKey, newRecord, response);
         }
     }
-
 }

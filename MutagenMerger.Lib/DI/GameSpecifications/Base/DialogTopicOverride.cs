@@ -37,14 +37,12 @@ public class DialogTopicOverride
 
     public static IMajorRecord DuplicateDialogTopic<TMod, TModGetter>(MergeState<TMod, TModGetter> state,
         IMajorRecordGetter record, MajorRecord.TranslationMask mask)
-
         where TModGetter : class, IModGetter, IContextGetterMod<TMod, TModGetter>
         where TMod : class, IMod, IContextMod<TMod, TModGetter>, TModGetter
     {
         // Don't duplicate branches, as they will be added below
         IMajorRecord newRecord = record.Duplicate(state.GetFormKey(record.FormKey),mask);
-
-
+        
         switch (state.Release)
         {
             case GameRelease.Oblivion:

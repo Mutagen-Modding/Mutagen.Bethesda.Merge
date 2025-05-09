@@ -98,19 +98,19 @@ public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> :
 
     private void MergeJson(MergeState<TMod, TModGetter> state)
     {
-        var _outputDir = Path.GetDirectoryName(state.OutputPath) ?? "";
-        var _mergeName = Path.GetFileNameWithoutExtension(state.OutputPath);
-        var _mergePlugin = state.OutgoingMod.ModKey.FileName;
-        var _mergeDir = Path.Combine(_outputDir, "merge - " + _mergeName);
-        if (!Directory.Exists(_mergeDir))
+        var outputDir = Path.GetDirectoryName(state.OutputPath) ?? "";
+        var mergeName = Path.GetFileNameWithoutExtension(state.OutputPath);
+        var mergePlugin = state.OutgoingMod.ModKey.FileName;
+        var mergeDir = Path.Combine(outputDir, "merge - " + mergeName);
+        if (!Directory.Exists(mergeDir))
         {
-            Directory.CreateDirectory(_mergeDir);
+            Directory.CreateDirectory(mergeDir);
         }
 
         JsonObject? _mergeJson = new()
         {
-            { "name", new JsonPrimitive(_mergeName) },
-            { "filename", new JsonPrimitive(_mergePlugin)},
+            { "name", new JsonPrimitive(mergeName) },
+            { "filename", new JsonPrimitive(mergePlugin)},
             { "method", new JsonPrimitive("Mutagen.Bethesda.Merge")},
             { "loadOrder", new JsonArray (
                 state.env.LoadOrder.PriorityOrder.Resolve().Select(x => new JsonPrimitive(x.ModKey.FileName)).ToArray()
@@ -127,7 +127,7 @@ public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> :
             )}
         };
 
-        File.WriteAllText(Path.Combine(_mergeDir, "merge.json"), _mergeJson.ToString());
+        File.WriteAllText(Path.Combine(mergeDir, "merge.json"), _mergeJson.ToString());
 
         JsonObject? _mapJson = new(
             state.ModsToMerge.Select(
@@ -143,7 +143,7 @@ public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> :
             )
         );
 
-        File.WriteAllText(Path.Combine(_mergeDir, "map.json"), _mapJson.ToString());
+        File.WriteAllText(Path.Combine(mergeDir, "map.json"), _mapJson.ToString());
 
 
 
@@ -158,7 +158,7 @@ public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> :
             )
         );
 
-        File.WriteAllText(Path.Combine(_mergeDir, "fidCache.json"), _fidJson.ToString());
+        File.WriteAllText(Path.Combine(mergeDir, "fidCache.json"), _fidJson.ToString());
 
     }
 

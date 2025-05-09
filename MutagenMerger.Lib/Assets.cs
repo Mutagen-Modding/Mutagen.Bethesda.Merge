@@ -22,28 +22,27 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
     static string _outputDir = "";
     static string _mergeName = "";
     static string temp = GetTemporaryDirectory();
-    public static List<string> Rules
+    public static List<string> Rules { get; } = GetRules();
+
+    private static List<string> GetRules()
     {
-        get
+        var rules = new List<string>() {"**/*.@(esp|esm|bsa|ba2|bsl)", "meta.ini",
+            "interface/translations/*.txt", "TES5Edit Backups/**/*",
+            "fomod/**/*", "screenshot?(s)/**/*", "scripts/source/*.psc", "source/scripts/*.psc"};
+
+        _mergeState.ModsToMerge.ForEach(x =>
         {
-            var rules = new List<string>() {"**/*.@(esp|esm|bsa|ba2|bsl)", "meta.ini",
-                "interface/translations/*.txt", "TES5Edit Backups/**/*",
-                "fomod/**/*", "screenshot?(s)/**/*", "scripts/source/*.psc", "source/scripts/*.psc"};
-
-            _mergeState.ModsToMerge.ForEach(x =>
-            {
-                rules.Add($"**/{x.Name.ToLower()}.seq");
-                rules.Add($"**/{x.Name.ToLower()}.ini");
-                rules.Add($"**/{x.Name.ToLower()}_DISTR.ini");
-                rules.Add($"**/{x.Name.ToLower()}_ANIO.ini");
-                rules.Add($"**/{x.Name.ToLower()}_SWAP.ini");
-                rules.Add($"**/{x.Name.ToLower()}_KID.ini");
-                rules.Add($"**/{x.FileName.String.ToLower()}/**/*");
-            });
-            return rules;
-        }
+            rules.Add($"**/{x.Name.ToLower()}.seq");
+            rules.Add($"**/{x.Name.ToLower()}.ini");
+            rules.Add($"**/{x.Name.ToLower()}_DISTR.ini");
+            rules.Add($"**/{x.Name.ToLower()}_ANIO.ini");
+            rules.Add($"**/{x.Name.ToLower()}_SWAP.ini");
+            rules.Add($"**/{x.Name.ToLower()}_KID.ini");
+            rules.Add($"**/{x.FileName.String.ToLower()}/**/*");
+        });
+        return rules;
     }
-
+    
     public static void Handle(
         MergeState<TMod, TModGetter> mergeState)
     {
@@ -82,10 +81,6 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
         }
 
         BuildSeqFile(_mergeState.DataPath, temp, _mergeState.OutgoingMod);
-
-
-
-
         Directory.Delete(temp, true);
     }
 
@@ -245,8 +240,6 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
                 }
 
             }
-
-
         });
     }
 

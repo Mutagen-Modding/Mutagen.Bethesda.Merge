@@ -5,7 +5,7 @@ namespace MutagenMerger.Lib.DI.GameSpecifications.Skyrim;
 
 public class WorldspaceOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, IWorldspace, IWorldspaceGetter>
 {
-    private static readonly Worldspace.TranslationMask WorldspaceMask = new Mutagen.Bethesda.Skyrim.Worldspace.TranslationMask(defaultOn: true)
+    private static readonly Worldspace.TranslationMask WorldspaceMask = new(defaultOn: true)
     {
         SubCells = false,
         TopCell = false,
@@ -19,10 +19,9 @@ public class WorldspaceOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, IW
         MergeState<ISkyrimMod, ISkyrimModGetter> state,
         IModContext<ISkyrimMod, ISkyrimModGetter, IWorldspace, IWorldspaceGetter> context)
     {
-        Mutagen.Bethesda.Skyrim.Worldspace newRecord;
         if (state.IsOverride(context.Record.FormKey, context.ModKey))
         {
-            newRecord = (Mutagen.Bethesda.Skyrim.Worldspace)context.GetOrAddAsOverride(state.OutgoingMod);
+            var newRecord = context.GetOrAddAsOverride(state.OutgoingMod);
             // Readd branches below
             newRecord.LargeReferences.Clear();
             newRecord.SubCells.Clear();
@@ -33,7 +32,7 @@ public class WorldspaceOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, IW
         else
         {
             // Don't duplicate branches, as they will be added below
-            newRecord = (Mutagen.Bethesda.Skyrim.Worldspace)context.Record.Duplicate(state.GetFormKey(context.Record.FormKey), WorldspaceMask);
+            var newRecord = context.Record.Duplicate(state.GetFormKey(context.Record.FormKey), WorldspaceMask);
 
             state.OutgoingMod.Worldspaces.Add(newRecord);
             
@@ -41,8 +40,5 @@ public class WorldspaceOverride : ACopyOverride<ISkyrimMod, ISkyrimModGetter, IW
             
             Console.WriteLine("          Deep Copying [" + context.Record.FormKey.ModKey.Name + "] " + context.Record.FormKey.IDString() + " to [" + newRecord.FormKey.ModKey.Name + "] " + newRecord.FormKey.IDString());
         }
-
-
-        
-        }
+    }
 }
