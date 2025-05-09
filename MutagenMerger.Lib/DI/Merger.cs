@@ -73,7 +73,11 @@ public sealed class Merger<TModGetter, TMod, TMajorRecord, TMajorRecordGetter> :
         state.OutgoingMod.RemapLinks(state.Mapping);
 
         Directory.CreateDirectory(state.OutputPath.Directory ?? "");
-        state.OutgoingMod.WriteToBinary(state.OutputPath, Utils.SafeBinaryWriteParameters(env.LoadOrder.Keys));
+        state.OutgoingMod.BeginWrite
+            .ToPath(state.OutputPath)
+            .WithLoadOrder(env.LoadOrder.Keys)
+            .WithDataFolder(env.DataFolderPath)
+            .Write();
 
         // foreach (var rec in state.OutgoingMod.EnumerateMajorRecords())
         // {

@@ -38,8 +38,9 @@ public class MergerTests
             mod2,
         };
 
-        using (var testMod1 =
-               SkyrimMod.CreateFromBinaryOverlay(Path.Combine(testFolder, mod1), SkyrimRelease.SkyrimSE))
+        using (var testMod1 = SkyrimMod.Create(SkyrimRelease.SkyrimSE)
+                   .FromPath(Path.Combine(testFolder, mod1))
+                   .Construct())
         {
             var action1 = testMod1.Actions.First();
 

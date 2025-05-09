@@ -14,7 +14,10 @@ public static class MutagenTestHelpers
             
         var mod = new SkyrimMod(ModKey.FromNameAndExtension(fileName), SkyrimRelease.SkyrimSE);
         addRecords(mod);
-        mod.WriteToBinary(outputPath, Utils.SafeBinaryWriteParameters);
+        mod.BeginWrite
+            .ToPath(outputPath)
+            .WithNoLoadOrder()
+            .Write();
         return fileName;
     }
 
@@ -22,7 +25,9 @@ public static class MutagenTestHelpers
     {
         Assert.True(File.Exists(path));
 
-        using var mod = SkyrimMod.CreateFromBinaryOverlay(ModPath.FromPath(path), SkyrimRelease.SkyrimSE);
+        using var mod = SkyrimMod.Create(SkyrimRelease.SkyrimSE)
+            .FromPath(path)
+            .Construct();
         verify(mod);
     }
 }
