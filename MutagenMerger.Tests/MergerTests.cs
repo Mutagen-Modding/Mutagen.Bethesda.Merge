@@ -1,6 +1,8 @@
 ﻿using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Plugins.Assets;
 using Mutagen.Bethesda.Skyrim;
+using Mutagen.Bethesda.Skyrim.Assets;
 using MutagenMerger.Lib.DI;
 using Xunit;
 
@@ -55,10 +57,11 @@ public class MergerTests
         }
 
         const string outputFileName = "output.esp";
-        using (var merger = new Merger<,,,>(testFolder, mods, mods, outputFileName, testFolder, GameRelease.SkyrimSE))
-        {
-            merger.Merge();
-        }
+        throw new NotImplementedException();
+        // using (var merger = new Merger<ISkyrimModGetter, ISkyrimMod, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>(testFolder, mods, mods, outputFileName, testFolder, GameRelease.SkyrimSE))
+        // {
+        //     merger.Merge();
+        // }
 
         var outputFile = Path.Combine(testFolder, outputFileName);
         MutagenTestHelpers.TestPlugin(outputFile, mod =>
@@ -96,10 +99,11 @@ public class MergerTests
         if (File.Exists(outputPath))
             File.Delete(outputPath);
             
-        using (var merger = new Merger(folder, mods, mods, outputMod, folder, GameRelease.SkyrimSE))
-        {
-            merger.Merge();
-        }
+        throw new NotImplementedException();
+        // using (var merger = new Merger(folder, mods, mods, outputMod, folder, GameRelease.SkyrimSE))
+        // {
+        //     merger.Merge();
+        // }
             
         Assert.True(File.Exists(outputPath));
     }

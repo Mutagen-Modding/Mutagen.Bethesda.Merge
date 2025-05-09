@@ -137,9 +137,13 @@ public static class AssetMerge<TModGetter, TMod, TMajorRecord, TMajorRecordGette
                 GameRelease.Fallout4 => ((Fallout4.Quest)quest).Data?.Flags.HasFlag(Fallout4.Quest.Flag.StartGameEnabled) ?? false,
                 _ => ((Skyrim.Quest)quest).Flags.HasFlag(Skyrim.Quest.Flag.StartGameEnabled)
             };
-            if (startGameEnabled) {
-                var fid = masterColl.GetFormID(quest.FormKey).Raw;
-                formIds.Add(fid);
+            if (startGameEnabled)
+            {
+                throw new NotImplementedException();
+                // This got hidden in latest mutagen after Starfield flipped the table.
+                // Will need to re-expose how FormIDs are generated in a tool the public has access to.
+                // var fid = masterColl.GetFormID(quest.FormKey).Raw;
+                // formIds.Add(fid);
             }
         });
 
