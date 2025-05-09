@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Autofac;
 using CommandLine;
 using Mutagen.Bethesda;
+using Mutagen.Bethesda.Environments.DI;
 using Mutagen.Bethesda.Fallout4;
 using Mutagen.Bethesda.Oblivion;
 using Mutagen.Bethesda.Plugins;
@@ -50,11 +51,17 @@ public static class Program
 
         ContainerBuilder builder = new();
         builder.RegisterModule<MainModule>();
+        builder.RegisterInstance(
+            new DataDirectoryInjection(options.DataFolder));
+        builder.RegisterInstance(
+            new GameReleaseInjection(options.Game));
         var container = builder.Build();
         var merger = container.Resolve(typeof(Merger<,,,>).MakeGenericType(genericTypes)) as IMerger;
 
-        merger!.Merge(options.DataFolder, modsToMerge,
-            ModKey.FromNameAndExtension(options.MergeName), options.Output, options.Game);
+        merger!.Merge(
+            modsToMerge,
+            ModKey.FromNameAndExtension(options.MergeName),
+            options.Output);
 
         Console.WriteLine($"Merged {modsToMerge.Count} plugins in {sw.ElapsedMilliseconds}ms");
         sw.Stop();

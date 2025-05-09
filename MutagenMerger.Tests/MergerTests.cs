@@ -1,6 +1,7 @@
 ﻿using System.IO.Abstractions;
 using Autofac;
 using Mutagen.Bethesda;
+using Mutagen.Bethesda.Environments.DI;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
 using Mutagen.Bethesda.Testing.AutoData;
@@ -23,24 +24,35 @@ public class MergerTests
     public class TestModule : Module
     {
         private readonly IFileSystem _fileSystem;
+        private readonly IDataDirectoryProvider _dataDirectoryProvider;
+        private readonly IGameReleaseContext _gameReleaseContext;
 
-        public TestModule(IFileSystem fileSystem)
+        public TestModule(
+            IFileSystem fileSystem,
+            IDataDirectoryProvider dataDirectoryProvider,
+            IGameReleaseContext gameReleaseContext)
         {
             _fileSystem = fileSystem;
+            _dataDirectoryProvider = dataDirectoryProvider;
+            _gameReleaseContext = gameReleaseContext;
         }
         
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance(_fileSystem).As<IFileSystem>()
-                .SingleInstance();
+            builder.RegisterInstance(_fileSystem)
+                .As<IFileSystem>();
+            builder.RegisterInstance(_dataDirectoryProvider)
+                .AsImplementedInterfaces();
+            builder.RegisterInstance(_gameReleaseContext)
+                .AsImplementedInterfaces();
             builder.RegisterModule<MergerModule>();
         }
     }
         
-    [Theory, MutagenAutoData]
+    [Theory, MutagenAutoData(GameRelease.SkyrimSE)]
     public void TestMerging(
         IFileSystem fileSystem,
-        DirectoryPath existingFolder,
+        IDataDirectoryProvider dataDirectory,
         MutagenTestHelpers testHelpers,
         ModKey modKey1,
         ModKey modKey2,
@@ -53,13 +65,13 @@ public class MergerTests
         ModKey outputModKey,
         TestModule testModule)
     {
-        var mod1 = testHelpers.CreateDummyPlugin(existingFolder, modKey1, mod =>
+        var mod1 = testHelpers.CreateDummyPlugin(dataDirectory.Path, modKey1, mod =>
         {
             mod.Actions.AddNew(editorId1);
             mod.Actions.AddNew(editorId2);
         });
 
-        var mod2 = testHelpers.CreateDummyPlugin(existingFolder, modKey2, mod =>
+        var mod2 = testHelpers.CreateDummyPlugin(dataDirectory.Path, modKey2, mod =>
         {
             mod.Actions.AddNew(editorId3);
             mod.Actions.AddNew(editorId4);
@@ -72,13 +84,13 @@ public class MergerTests
         };
 
         using (var testMod1 = SkyrimMod.Create(SkyrimRelease.SkyrimSE)
-                   .FromPath(Path.Combine(existingFolder, mod1))
+                   .FromPath(Path.Combine(dataDirectory.Path, mod1))
                    .WithFileSystem(fileSystem)
                    .Construct())
         {
             var action1 = testMod1.Actions.First();
 
-            var mod3 = testHelpers.CreateDummyPlugin(existingFolder, modKey3, mod =>
+            var mod3 = testHelpers.CreateDummyPlugin(dataDirectory.Path, modKey3, mod =>
             {
                 var copy = action1.DeepCopy();
                 copy.EditorID = modifiedEditorId;
@@ -94,13 +106,11 @@ public class MergerTests
         var sut = builder.Resolve<Merger<ISkyrimMod, ISkyrimModGetter, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>>();
         
         sut.Merge(
-            dataFolderPath: existingFolder,
             modsToMerge: mods,
             outputKey: outputModKey,
-            outputFolder: existingFolder,
-            game: GameRelease.SkyrimSE);
+            outputFolder: dataDirectory.Path);
 
-        var outputFile = Path.Combine(existingFolder, outputModKey.FileName);
+        var outputFile = Path.Combine(dataDirectory.Path, outputModKey.FileName);
         testHelpers.TestPlugin(outputFile, mod =>
         {
             mod.Actions.Count.ShouldEqual(4);

@@ -6,17 +6,16 @@ using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Records;
 using Noggog;
 using System.Security.Cryptography;
+using Mutagen.Bethesda.Environments.DI;
 
 namespace MutagenMerger.Lib.DI;
 
 public interface IMerger
 {
     void Merge(
-        DirectoryPath dataFolderPath,
         IEnumerable<ModKey> modsToMerge, 
         ModKey outputKey,
-        DirectoryPath outputFolder,
-        GameRelease game);
+        DirectoryPath outputFolder);
 }
 
 public sealed class Merger<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> : IMerger
@@ -26,28 +25,37 @@ public sealed class Merger<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> :
     where TMajorRecordGetter : class, IMajorRecordGetter
 {
     private readonly IFileSystem _fileSystem;
+    private readonly IDataDirectoryProvider _dataDirectoryProvider;
+    private readonly IGameReleaseContext _gameReleaseContext;
     private readonly AssetMerge<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>.Factory _assetMergeFactory;
     private readonly CopyRecordProcessor<TMod, TModGetter> _copyRecordProcessor;
 
     public Merger(
         IFileSystem fileSystem,
+        IDataDirectoryProvider dataDirectoryProvider,
+        IGameReleaseContext gameReleaseContext,
         AssetMerge<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>.Factory assetMergeFactory,
         CopyRecordProcessor<TMod, TModGetter> copyRecordProcessor)
     {
         _fileSystem = fileSystem;
+        _dataDirectoryProvider = dataDirectoryProvider;
+        _gameReleaseContext = gameReleaseContext;
         _assetMergeFactory = assetMergeFactory;
         _copyRecordProcessor = copyRecordProcessor;
     }
         
     public void Merge(
-        DirectoryPath dataFolderPath,
         IEnumerable<ModKey> modsToMerge, 
         ModKey outputKey,
-        DirectoryPath outputFolder,
-        GameRelease game)
+        DirectoryPath outputFolder)
     {
-        var outputMod = ModInstantiator.Activator(outputKey, game) as TMod ?? throw new Exception("Could not instantiate mod");
-        var env = GameEnvironmentBuilder<TMod,TModGetter>.Create(game).WithTargetDataFolder(dataFolderPath).WithOutputMod(outputMod).Build();
+        var outputMod = ModInstantiator<TMod>.Activator(outputKey, _gameReleaseContext.Release);
+        var env = GameEnvironmentBuilder<TMod,TModGetter>
+            .Create(_gameReleaseContext.Release)
+            .WithTargetDataFolder(_dataDirectoryProvider.Path)
+            .WithOutputMod(outputMod)
+            .WithFileSystem(_fileSystem)
+            .Build();
         var mods = env.LoadOrder.PriorityOrder.ResolveAllModsExist().ToArray();
         var mergingMods = mods.Where(x => modsToMerge.Contains(x.ModKey)).ToArray();
 
@@ -62,12 +70,12 @@ public sealed class Merger<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> :
         var linkCache = mergingMods.ToImmutableLinkCache<TMod, TModGetter>();
 
         var state = new MergeState<TMod, TModGetter>(
-            game,
+            _gameReleaseContext.Release,
             mods,
             modsToMergeSet,
             outputMod,
             OutputPath: outputFile,
-            DataPath: dataFolderPath,
+            DataPath: _dataDirectoryProvider.Path,
             LinkCache: linkCache,
             env: env);
             
