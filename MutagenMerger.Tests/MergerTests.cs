@@ -1,9 +1,9 @@
-﻿using Mutagen.Bethesda;
+﻿using System.IO.Abstractions;
+using Mutagen.Bethesda;
 using Mutagen.Bethesda.Plugins;
-using Mutagen.Bethesda.Plugins.Assets;
 using Mutagen.Bethesda.Skyrim;
-using Mutagen.Bethesda.Skyrim.Assets;
-using MutagenMerger.Lib.DI;
+using Mutagen.Bethesda.Testing.AutoData;
+using Noggog;
 using Xunit;
 
 namespace MutagenMerger.Tests;
@@ -15,20 +15,19 @@ public class MergerTests
         Warmup.Init();
     }
         
-    [Fact]
-    public void TestMerging()
+    [Theory, MutagenAutoData]
+    public void TestMerging(
+        IFileSystem fileSystem,
+        DirectoryPath existingFolder,
+        MutagenTestHelpers testHelpers)
     {
-        const string testFolder = "merging-test-folder";
-        if (Directory.Exists(testFolder))
-            Directory.Delete(testFolder, true);
-            
-        var mod1 = MutagenTestHelpers.CreateDummyPlugin(testFolder, "test-file-1.esp", mod =>
+        var mod1 = testHelpers.CreateDummyPlugin(existingFolder, "test-file-1.esp", mod =>
         {
             mod.Actions.AddNew("Action1");
             mod.Actions.AddNew("Action2");
         });
 
-        var mod2 = MutagenTestHelpers.CreateDummyPlugin(testFolder, "test-file-2.esp", mod =>
+        var mod2 = testHelpers.CreateDummyPlugin(existingFolder, "test-file-2.esp", mod =>
         {
             mod.Actions.AddNew("Action3");
             mod.Actions.AddNew("Action4");
@@ -41,12 +40,13 @@ public class MergerTests
         };
 
         using (var testMod1 = SkyrimMod.Create(SkyrimRelease.SkyrimSE)
-                   .FromPath(Path.Combine(testFolder, mod1))
+                   .FromPath(Path.Combine(existingFolder, mod1))
+                   .WithFileSystem(fileSystem)
                    .Construct())
         {
             var action1 = testMod1.Actions.First();
 
-            var mod3 = MutagenTestHelpers.CreateDummyPlugin(testFolder, "test-file-3.esp", mod =>
+            var mod3 = testHelpers.CreateDummyPlugin(existingFolder, "test-file-3.esp", mod =>
             {
                 var copy = action1.DeepCopy();
                 copy.EditorID = "Action1x";
@@ -63,8 +63,8 @@ public class MergerTests
         //     merger.Merge();
         // }
 
-        var outputFile = Path.Combine(testFolder, outputFileName);
-        MutagenTestHelpers.TestPlugin(outputFile, mod =>
+        var outputFile = Path.Combine(existingFolder, outputFileName);
+        testHelpers.TestPlugin(outputFile, mod =>
         {
             Assert.Equal(4, mod.Actions.Count);
                 
