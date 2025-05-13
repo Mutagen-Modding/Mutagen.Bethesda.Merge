@@ -1,5 +1,5 @@
 #/bin/bash
-project="MutagenMerger.CLI/MutagenMerger.CLI.csproj"
+project="Synthesis.Bethesda.CLI/Synthesis.Bethesda.CLI.csproj"
 
 files=$(echo "$_data"$(cat "$MO2_Instance/profiles/$profile/modlist.txt" | tac | grep -ve '^-' -ve '^#' -ve '^\*' | sed 's#^\+#'"$MO2_Instance"'/mods/#' | sed  's/.*/:&/g' | tr -d "\n\r"));
 cp "$MO2_Instance/profiles/$profile/plugins.txt" "$LocalAppData/$game/Plugins.txt"
