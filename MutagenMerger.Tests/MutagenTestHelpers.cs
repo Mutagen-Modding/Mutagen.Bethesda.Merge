@@ -1,6 +1,8 @@
 ﻿using System.IO.Abstractions;
+using Mutagen.Bethesda.Environments.DI;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Skyrim;
+using Mutagen.Bethesda.Testing.Fakes;
 using Noggog;
 using Shouldly;
 
@@ -9,15 +11,19 @@ namespace MutagenMerger.Tests;
 public class MutagenTestHelpers
 {
     private readonly IFileSystem _fileSystem;
+    private readonly IDataDirectoryProvider _dataDirectoryProvider;
 
-    public MutagenTestHelpers(IFileSystem fileSystem)
+    public MutagenTestHelpers(
+        IFileSystem fileSystem,
+        IDataDirectoryProvider dataDirectoryProvider)
     {
         _fileSystem = fileSystem;
+        _dataDirectoryProvider = dataDirectoryProvider;
     }
     
-    public ModPath CreateDummyPlugin(DirectoryPath directory, ModKey modName, Action<SkyrimMod> addRecords)
+    public ModPath CreateDummyPlugin(ModKey modName, Action<SkyrimMod> addRecords)
     {
-        var modPath = ModPath.FromPath(Path.Combine(directory, modName.FileName));
+        var modPath = ModPath.FromPath(Path.Combine(_dataDirectoryProvider.Path, modName.FileName));
         modPath.Path.Directory?.Create(_fileSystem);
             
         var mod = new SkyrimMod(modPath.ModKey, SkyrimRelease.SkyrimSE);

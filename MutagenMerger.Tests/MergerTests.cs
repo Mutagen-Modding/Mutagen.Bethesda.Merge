@@ -3,8 +3,11 @@ using Autofac;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Environments.DI;
 using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Plugins.Order.DI;
 using Mutagen.Bethesda.Skyrim;
+using Mutagen.Bethesda.Testing;
 using Mutagen.Bethesda.Testing.AutoData;
+using Mutagen.Bethesda.Testing.Fakes;
 using MutagenMerger.Lib;
 using MutagenMerger.Lib.DI;
 using Noggog;
@@ -23,36 +26,18 @@ public class MergerTests
 
     public class TestModule : Module
     {
-        private readonly IFileSystem _fileSystem;
-        private readonly IDataDirectoryProvider _dataDirectoryProvider;
-        private readonly IGameReleaseContext _gameReleaseContext;
-
-        public TestModule(
-            IFileSystem fileSystem,
-            IDataDirectoryProvider dataDirectoryProvider,
-            IGameReleaseContext gameReleaseContext)
-        {
-            _fileSystem = fileSystem;
-            _dataDirectoryProvider = dataDirectoryProvider;
-            _gameReleaseContext = gameReleaseContext;
-        }
-        
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance(_fileSystem)
-                .As<IFileSystem>();
-            builder.RegisterInstance(_dataDirectoryProvider)
-                .AsImplementedInterfaces();
-            builder.RegisterInstance(_gameReleaseContext)
-                .AsImplementedInterfaces();
             builder.RegisterModule<MergerModule>();
+            builder.RegisterType<MutagenTestHelpers>().AsSelf();
         }
     }
         
-    [Theory, MutagenAutoData(GameRelease.SkyrimSE)]
+    [Theory, MutagenContainerAutoData<TestModule>(GameRelease.SkyrimSE)]
     public void TestMerging(
         IFileSystem fileSystem,
-        IDataDirectoryProvider dataDirectory,
+        ManualLoadOrderProvider loadOrderProvider,
+        ManualDataDirectoryProvider dataDirectory,
         MutagenTestHelpers testHelpers,
         ModKey modKey1,
         ModKey modKey2,
@@ -63,15 +48,15 @@ public class MergerTests
         string editorId4,
         string modifiedEditorId,
         ModKey outputModKey,
-        TestModule testModule)
+        Merger<ISkyrimMod, ISkyrimModGetter, ISkyrimMajorRecord, ISkyrimMajorRecordGetter> sut)
     {
-        var mod1 = testHelpers.CreateDummyPlugin(dataDirectory.Path, modKey1, mod =>
+        var mod1 = testHelpers.CreateDummyPlugin(modKey1, mod =>
         {
             mod.Actions.AddNew(editorId1);
             mod.Actions.AddNew(editorId2);
         });
 
-        var mod2 = testHelpers.CreateDummyPlugin(dataDirectory.Path, modKey2, mod =>
+        var mod2 = testHelpers.CreateDummyPlugin(modKey2, mod =>
         {
             mod.Actions.AddNew(editorId3);
             mod.Actions.AddNew(editorId4);
@@ -90,7 +75,7 @@ public class MergerTests
         {
             var action1 = testMod1.Actions.First();
 
-            var mod3 = testHelpers.CreateDummyPlugin(dataDirectory.Path, modKey3, mod =>
+            var mod3 = testHelpers.CreateDummyPlugin(modKey3, mod =>
             {
                 var copy = action1.DeepCopy();
                 copy.EditorID = modifiedEditorId;
@@ -99,11 +84,8 @@ public class MergerTests
                 
             mods.Add(mod3);
         }
-
-        var container = new ContainerBuilder();
-        container.RegisterModule(testModule);
-        var builder = container.Build();
-        var sut = builder.Resolve<Merger<ISkyrimMod, ISkyrimModGetter, ISkyrimMajorRecord, ISkyrimMajorRecordGetter>>();
+        
+        loadOrderProvider.SetTo(mods.ToArray());
         
         sut.Merge(
             modsToMerge: mods,

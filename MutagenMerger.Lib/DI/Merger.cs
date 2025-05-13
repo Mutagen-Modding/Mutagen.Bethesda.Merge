@@ -7,6 +7,7 @@ using Mutagen.Bethesda.Plugins.Records;
 using Noggog;
 using System.Security.Cryptography;
 using Mutagen.Bethesda.Environments.DI;
+using Mutagen.Bethesda.Plugins.Order.DI;
 
 namespace MutagenMerger.Lib.DI;
 
@@ -27,21 +28,26 @@ public sealed class Merger<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> :
     private readonly IFileSystem _fileSystem;
     private readonly IDataDirectoryProvider _dataDirectoryProvider;
     private readonly IGameReleaseContext _gameReleaseContext;
+    private readonly ILoadOrderListingsProvider _loadOrderListingsProvider;
     private readonly AssetMerge<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>.Factory _assetMergeFactory;
     private readonly CopyRecordProcessor<TMod, TModGetter> _copyRecordProcessor;
+    private readonly MD5 _md5; 
 
     public Merger(
         IFileSystem fileSystem,
         IDataDirectoryProvider dataDirectoryProvider,
         IGameReleaseContext gameReleaseContext,
+        ILoadOrderListingsProvider loadOrderListingsProvider,
         AssetMerge<TMod, TModGetter, TMajorRecord, TMajorRecordGetter>.Factory assetMergeFactory,
         CopyRecordProcessor<TMod, TModGetter> copyRecordProcessor)
     {
         _fileSystem = fileSystem;
         _dataDirectoryProvider = dataDirectoryProvider;
         _gameReleaseContext = gameReleaseContext;
+        _loadOrderListingsProvider = loadOrderListingsProvider;
         _assetMergeFactory = assetMergeFactory;
         _copyRecordProcessor = copyRecordProcessor;
+        _md5 = MD5.Create(); 
     }
         
     public void Merge(
@@ -54,6 +60,10 @@ public sealed class Merger<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> :
             .Create(_gameReleaseContext.Release)
             .WithTargetDataFolder(_dataDirectoryProvider.Path)
             .WithOutputMod(outputMod)
+            .WithLoadOrder(_loadOrderListingsProvider.Get()
+                .Where(x => x.Enabled)
+                .Select(x => x.ModKey)
+                .ToArray())
             .WithFileSystem(_fileSystem)
             .Build();
         var mods = env.LoadOrder.PriorityOrder.ResolveAllModsExist().ToArray();
@@ -125,23 +135,32 @@ public sealed class Merger<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> :
             { "filename", new JsonPrimitive(mergePlugin)},
             { "method", new JsonPrimitive("Mutagen.Bethesda.Merge")},
             { "loadOrder", new JsonArray (
-                state.env.LoadOrder.PriorityOrder.Resolve().Select(x => new JsonPrimitive(x.ModKey.FileName)).ToArray()
+                state.env.LoadOrder.PriorityOrder
+                    .Select(x => x.ModKey.FileName)
+                    .Select(x => new JsonPrimitive(x))
+                    .Select(x => (JsonValue)x)
+                    .ToArray()
             )},
             {"dateBuilt", new JsonPrimitive(DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.zzZ"))},
             {"plugins", new JsonArray (
-                state.ModsToMerge.Select(x => { MD5 md5 = MD5.Create(); return new JsonObject
-                {
-                    { "filename", new JsonPrimitive(x.FileName) },
-                    { "hash", new JsonPrimitive(BitConverter.ToString(md5.ComputeHash(_fileSystem.File.ReadAllBytes(Path.Combine(state.env.DataFolderPath,x.FileName)))).Replace("-", "").ToLowerInvariant()) },
-                    { "dataFolder", new JsonPrimitive(state.env.DataFolderPath)}
-
-                }; }).ToArray()
+                state.ModsToMerge
+                    .Select(x =>
+                    {
+                        return new JsonObject
+                        {
+                            { "filename", new JsonPrimitive(x.FileName) },
+                            { "hash", new JsonPrimitive(BitConverter.ToString(_md5.ComputeHash(_fileSystem.File.ReadAllBytes(Path.Combine(state.env.DataFolderPath,x.FileName)))).Replace("-", "").ToLowerInvariant()) },
+                            { "dataFolder", new JsonPrimitive(state.env.DataFolderPath)}
+                        };
+                    })
+                    .Select(x => (JsonValue)x)
+                    .ToArray()
             )}
         };
 
         _fileSystem.File.WriteAllText(Path.Combine(mergeDir, "merge.json"), _mergeJson.ToString());
 
-        JsonObject? _mapJson = new(
+        JsonObject? mapJson = new(
             state.ModsToMerge.Select(
                 x => new KeyValuePair<string, JsonValue>(
                     x.FileName,
@@ -155,22 +174,22 @@ public sealed class Merger<TMod, TModGetter, TMajorRecord, TMajorRecordGetter> :
             )
         );
 
-        _fileSystem.File.WriteAllText(Path.Combine(mergeDir, "map.json"), _mapJson.ToString());
-
-
-
-        JsonObject? _fidJson = new(
+        _fileSystem.File.WriteAllText(Path.Combine(mergeDir, "map.json"), mapJson.ToString());
+        
+        JsonObject? fidJson = new(
             state.ModsToMerge.Select(
                 x => new KeyValuePair<string, JsonValue>(
                     x.FileName,
-                    new JsonArray(state.Mapping.Where(y => y.Key.ModKey.Equals(x))
-                        .Select(
-                            y =>  new JsonPrimitive(y.Value.IDString())
-                        ).ToArray()))
+                    new JsonArray(
+                        state.Mapping
+                            .Where(y => y.Key.ModKey.Equals(x))
+                            .Select(y =>  new JsonPrimitive(y.Value.IDString()))
+                            .Select(x => (JsonValue)x)
+                            .ToArray()))
             )
         );
 
-        _fileSystem.File.WriteAllText(Path.Combine(mergeDir, "fidCache.json"), _fidJson.ToString());
+        _fileSystem.File.WriteAllText(Path.Combine(mergeDir, "fidCache.json"), fidJson.ToString());
 
     }
 
