@@ -9,7 +9,6 @@
     <PackageVersion Include="Mono.TextTemplating" Version="3.0.0" />
     <PackageVersion Include="Noggog.Testing" Version="2.71.0" />
     <PackageVersion Include="System.Json" Version="4.8.0" />
-    <PackageVersion Include="Mutagen.Bethesda" Version="0.43.3" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.0">
