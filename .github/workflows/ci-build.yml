@@ -39,7 +39,7 @@ jobs:
       run: |
         dotnet clean -c Release && dotnet nuget locals all --clear
         dotnet restore
-        dotnet tool
+        dotnet tool restore
     - name: Build
       run: dotnet build -c Release --no-restore /p:GeneratePackageOnBuild=false
     - name: Test
